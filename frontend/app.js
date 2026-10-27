@@ -45,6 +45,9 @@ function render(v) {
     v.input_type === "image" ? "Text we read from the image" : "What we found inside";
   $("extracted").textContent = inside.length > 1200 ? inside.slice(0, 1200) + "…" : inside;
   $("extracted-block").hidden = !inside;
+  const fixes = v.corrections || [];
+  $("corrections").textContent = fixes.length ? `We fixed words the recording may have misheard: ${fixes.join(", ")}` : "";
+  $("corrections").hidden = !fixes.length;
 
   $("what-next").textContent = v.what_next || "";
   $("next-block").hidden = !v.what_next;

@@ -151,3 +151,4 @@ input[type="file"] {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.corrections { color: var(--muted); font-size: 0.95rem; margin: 8px 0 0; }

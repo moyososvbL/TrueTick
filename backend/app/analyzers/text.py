@@ -11,17 +11,21 @@ from backend.app.models import Verdict
 log = logging.getLogger("truetick.text")
 
 
-async def analyze_text(text: str) -> Verdict:
+async def analyze_text(text: str, extra_system: str = "") -> Verdict:
     findings = run_checks(text)
     seen = {f.message for f in findings}
     findings += [f for f in await inspect_links(extract_urls(text)) if f.message not in seen]
     messages = [
-        {"role": "system", "content": prompts.text_system_prompt()},
+        {"role": "system", "content": prompts.text_system_prompt() + extra_system},
         {"role": "user", "content": prompts.text_user_prompt(text, [f.message for f in findings])},
     ]
     try:
         raw = await meta_client.chat(messages)
-        verdict = verdict_from_model(parse_model_json(raw))
+        data = parse_model_json(raw)
+        verdict = verdict_from_model(data)
+        if extra_system:
+            verdict.extracted_text = str(data.get("corrected_transcript") or "")[:8000]
+            verdict.corrections = [str(c) for c in (data.get("corrections") or [])][:6]
     except meta_client.MetaAPIError as e:
         log.error("Muse Spark call failed: %s", e)
         return fallback_verdict(findings, "service unreachable")

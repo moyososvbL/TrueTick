@@ -1,7 +1,7 @@
 """Voice notes and call recordings.
 
 1. Convert any recording (WhatsApp .opus/.ogg, browser .webm, .m4a, .mp3...) to the format
-   Muse Voice Transcribe accepts: WAV, PCM 16-bit, mono, 16 kHz, max 10 minutes.
+   Muse Voice Transcribe accepts: WAV, PCM 16-bit, mono, 16 or 24 kHz, max 10 minutes.
 2. Transcribe it with Muse Voice Transcribe.
 3. Check the transcript with the same text checker (link checks + patterns + Muse Spark).
 """
@@ -13,10 +13,11 @@ import av
 import numpy as np
 
 from backend.app.ai import meta_client
+from backend.app.ai.prompts import VOICE_EXTRA
 from backend.app.analyzers.text import analyze_text
 from backend.app.models import Verdict
 
-SAMPLE_RATE = 16000
+SAMPLE_RATE = 24000  # Meta accepts 16 or 24 kHz; 24 kHz keeps more detail for names like 'iTunes'
 MAX_SECONDS = 10 * 60
 
 
@@ -24,7 +25,7 @@ class BadAudioError(ValueError):
     pass
 
 
-def to_wav_16k_mono(data: bytes) -> tuple[bytes, float]:
+def to_wav_mono(data: bytes) -> tuple[bytes, float]:
     """Decode any common audio format and return (WAV bytes, duration in seconds)."""
     try:
         container = av.open(io.BytesIO(data))
@@ -63,7 +64,7 @@ def to_wav_16k_mono(data: bytes) -> tuple[bytes, float]:
 
 
 async def analyze_audio(data: bytes, caption: str = "") -> Verdict:
-    wav, _seconds = to_wav_16k_mono(data)
+    wav, _seconds = to_wav_mono(data)
     try:
         transcript = (await meta_client.transcribe(wav)).strip()
     except meta_client.MetaAPIError:
@@ -82,10 +83,14 @@ async def analyze_audio(data: bytes, caption: str = "") -> Verdict:
     context = "Transcript of a voice note or phone call the user received:\n" + transcript
     if caption:
         context += f"\n\nThe user added: {caption}"
-    verdict = await analyze_text(context)
+    verdict = await analyze_text(context, extra_system=VOICE_EXTRA)
     verdict.input_type = "audio"
-    verdict.extracted_text = transcript
+    corrected = verdict.extracted_text.strip()
+    verdict.extracted_text = corrected if corrected and verdict.corrections else transcript
     voice_tip = "Voices can be cloned with AI. If it sounds like someone you know, hang up and call them back on their usual number."
     if verdict.risk in ("high", "medium") and voice_tip not in verdict.advice:
         verdict.advice.append(voice_tip)
     return verdict
+
+
+to_wav_16k_mono = to_wav_mono  # old name, kept for scripts

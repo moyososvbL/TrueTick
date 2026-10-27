@@ -1,3 +1,4 @@
+import json
 import asyncio
 import io
 import wave
@@ -9,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from backend.app.ai import meta_client
-from backend.app.analyzers.audio import BadAudioError, to_wav_16k_mono
+from backend.app.analyzers.audio import BadAudioError, to_wav_mono
 from backend.app.config import get_settings
 from backend.app.main import app
 
@@ -33,16 +34,16 @@ def make_audio(fmt: str, codec: str, seconds: float = 1.5, rate: int = 48000) ->
     return buf.getvalue()
 
 
-def test_whatsapp_style_opus_converts_to_16k_wav():
-    wav, seconds = to_wav_16k_mono(make_audio("ogg", "libopus"))
+def test_whatsapp_style_opus_converts_to_24k_wav():
+    wav, seconds = to_wav_mono(make_audio("ogg", "libopus"))
     with wave.open(io.BytesIO(wav)) as w:
-        assert (w.getnchannels(), w.getsampwidth(), w.getframerate()) == (1, 2, 16000)
+        assert (w.getnchannels(), w.getsampwidth(), w.getframerate()) == (1, 2, 24000)
     assert 1.0 < seconds < 2.0
 
 
 def test_not_audio_rejected():
     with pytest.raises(BadAudioError):
-        to_wav_16k_mono(b"definitely not audio")
+        to_wav_mono(b"definitely not audio")
 
 
 def test_transcript_shapes():
@@ -69,7 +70,7 @@ def test_transcribe_call(monkeypatch):
     assert text == "This is your bank"
     assert seen["url"].endswith("/asr/transcribe")
     assert b'name="request"' in seen["body"] and b'name="audio"' in seen["body"]
-    assert b"muse-voice-transcribe-1.0" in seen["body"]
+    assert b"muse-voice-transcribe-1.0" in seen["body"] and b'"audioEncoding": "WAV"' in seen["body"]
 
 
 def test_voice_note_end_to_end(monkeypatch):
@@ -92,3 +93,36 @@ def test_voice_note_end_to_end(monkeypatch):
 def test_bad_audio_upload_returns_400():
     r = client.post("/api/check", files={"file": ("note.ogg", b"garbage", "audio/ogg")})
     assert r.status_code == 400
+
+
+def test_misheard_brand_is_corrected(monkeypatch):
+    async def fake_transcribe(wav, **kw):
+        return "Hello, can you please send me some items card, I want to go to the store"
+
+    async def fake_chat(messages, **kw):
+        fake_chat.system = messages[0]["content"]
+        return json.dumps({
+            "risk": "high", "scam_type": "Gift card request",
+            "corrected_transcript": "Hello, can you please send me some iTunes card, I want to go to the store",
+            "corrections": ["items card → iTunes card"], "advice": ["Don't buy gift cards for anyone"],
+        })
+
+    monkeypatch.setattr(meta_client, "transcribe", fake_transcribe)
+    monkeypatch.setattr(meta_client, "chat", fake_chat)
+    v = client.post("/api/check", files={"file": ("note.m4a", make_audio("ogg", "libopus"), "audio/mp4")}).json()
+    assert v["risk"] == "high" and "iTunes card" in v["extracted_text"]
+    assert v["corrections"] == ["items card → iTunes card"]
+    assert "AUTOMATIC TRANSCRIPT" in fake_chat.system
+
+
+def test_no_corrections_keeps_original_transcript(monkeypatch):
+    async def fake_transcribe(wav, **kw):
+        return "See you at lunch on Friday"
+
+    async def fake_chat(messages, **kw):
+        return json.dumps({"risk": "low", "corrected_transcript": "", "corrections": []})
+
+    monkeypatch.setattr(meta_client, "transcribe", fake_transcribe)
+    monkeypatch.setattr(meta_client, "chat", fake_chat)
+    v = client.post("/api/check", files={"file": ("n.ogg", make_audio("ogg", "libopus"), "audio/ogg")}).json()
+    assert v["extracted_text"] == "See you at lunch on Friday" and v["corrections"] == []

@@ -29,6 +29,7 @@ class Verdict(BaseModel):
     ai_used: bool = False
     input_type: Literal["text", "image", "audio", "file"] = "text"
     extracted_text: str = ""  # e.g. what a QR code contains, or a voice note transcript
+    corrections: list[str] = Field(default_factory=list)  # likely mishearings fixed in a voice transcript
     community_reports: int = 0  # how often its links/numbers were reported on TrueTick in the last 7 days
 
 

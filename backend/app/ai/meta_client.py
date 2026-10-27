@@ -136,7 +136,8 @@ def transcribe_request_parts(wav: bytes, request: dict) -> dict:
 async def transcribe(wav: bytes, transport: httpx.AsyncBaseTransport | None = None) -> str:
     """Muse Voice Transcribe: WAV (PCM 16-bit mono, 16/24 kHz, max 10 min) → text."""
     base, headers = _base_and_headers()
-    request = {"model": get_settings().transcribe_model}
+    # Confirmed working on the live API (Oct 27): model + audioEncoding "WAV".
+    request = {"model": get_settings().transcribe_model, "audioEncoding": "WAV"}
     async with httpx.AsyncClient(timeout=180, transport=transport) as client:
         try:
             r = await client.post(f"{base}/asr/transcribe", headers=headers,
