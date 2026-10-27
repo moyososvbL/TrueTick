@@ -20,6 +20,9 @@ How to judge:
   requests. Name the stage when you see one.
 - Automatic link and lookalike-letter checks are provided as evidence. Treat them as facts.
 - An ordinary message with no request and no pressure is low risk. Don't invent problems.
+- If the user says they ALREADY paid or shared details, the first advice must be: contact their
+  bank or payment provider immediately to stop or recall the payment, then report it.
+- Older people are targeted most. Keep advice simple and concrete.
 
 Known scam patterns (use the [id] in "pattern_id" when one clearly matches):
 {patterns}

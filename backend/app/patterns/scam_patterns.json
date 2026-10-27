@@ -306,6 +306,84 @@
         "Delete the file",
         "If installed, disconnect from the internet and contact your bank"
       ]
+    },
+    {
+      "id": "tech_support",
+      "name": "Fake tech or customer support",
+      "category": "impersonation",
+      "description": "A pop-up, call, email or message claims your computer, phone or account is hacked or infected, or that you were wrongly charged for a subscription. They push you to call a number, install remote-access software, or pay to 'fix' it.",
+      "signals": [
+        "pop-up or message saying your device is infected or hacked",
+        "call this number immediately",
+        "install AnyDesk, TeamViewer or another remote-access app",
+        "refund for a subscription you didn't order (antivirus, streaming)",
+        "asks you to log in to your bank while they watch your screen",
+        "asks for payment by gift card, crypto or wire to fix the problem"
+      ],
+      "what_next": "With remote access they can empty your bank account or install harmful software, then often pass you to a fake 'bank' or 'government agent'.",
+      "advice": [
+        "Real companies don't call you about viruses or ask to control your device",
+        "Never install remote-access apps for someone who contacted you",
+        "Close the pop-up, and contact the company only through its official website"
+      ]
+    },
+    {
+      "id": "government_impersonation",
+      "name": "Government or police impersonation",
+      "category": "impersonation",
+      "description": "Someone claims to be from the tax office, police, court, immigration or a social security office. They say you owe money, face arrest, or that your ID was used in a crime, and demand urgent payment.",
+      "signals": [
+        "warrant, arrest or deportation threat",
+        "unpaid tax, fine or 'case' that must be settled today",
+        "payment by gift card, crypto, crypto ATM or wire",
+        "told to keep it secret or stay on the line",
+        "your national ID or social security number was 'used in a crime'",
+        "official-looking badge numbers or documents sent by message"
+      ],
+      "what_next": "After one payment they invent new 'fees'. Some move on to taking your savings 'for safekeeping'.",
+      "advice": [
+        "Government agencies don't demand payment by gift card, crypto or wire",
+        "Hang up and contact the agency using a number from its official website",
+        "Never pay to avoid an arrest over the phone"
+      ]
+    },
+    {
+      "id": "crypto_atm_cash",
+      "name": "Cash to crypto ATM or courier",
+      "category": "payment",
+      "description": "A scammer tells you to withdraw cash and deposit it into a cryptocurrency ATM, buy gold, or hand cash to a courier, often to 'protect' it or settle a fake debt.",
+      "signals": [
+        "withdraw cash from your bank and deposit it into a Bitcoin ATM",
+        "scan this QR code at the crypto ATM",
+        "convert your savings to gold or cash for safekeeping",
+        "a courier will come to your home to collect it",
+        "told to lie to bank staff about why you are withdrawing"
+      ],
+      "what_next": "Money sent through a crypto ATM or handed to a courier is almost impossible to recover.",
+      "advice": [
+        "No real bank, police or government office will ask you to use a crypto ATM or hand over cash or gold",
+        "Talk to a trusted family member before withdrawing large sums",
+        "If bank staff ask questions, tell them the truth: they are trying to protect you"
+      ]
+    },
+    {
+      "id": "investment_club_deepfake",
+      "name": "Investment club with fake celebrity endorsement",
+      "category": "investment",
+      "description": "An ad or group chat ('investment club', 'VIP signals group') uses AI-made videos of celebrities, business leaders or 'experts' to promote a trading platform or coin.",
+      "signals": [
+        "video of a famous person or CEO promoting a guaranteed investment",
+        "invitation to a private WhatsApp or Telegram 'investment club'",
+        "'teacher' or 'assistant' gives daily stock or crypto tips",
+        "screenshots of other members' huge profits",
+        "pressure to move to a specific app to invest"
+      ],
+      "what_next": "Early fake profits encourage bigger deposits, then withdrawals are blocked behind 'fees'.",
+      "advice": [
+        "Celebrities don't promote guaranteed returns in group chats",
+        "Check whether the platform is registered with your country's financial regulator",
+        "Never invest through an app someone in a chat group recommends"
+      ]
     }
   ],
   "universal_red_flags": [
