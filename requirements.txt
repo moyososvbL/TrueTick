@@ -14,5 +14,8 @@ pillow
 opencv-python
 numpy
 
+# Voice notes (decodes .ogg/.opus/.m4a/.mp3, no ffmpeg install needed)
+av
+
 # Testing
 pytest

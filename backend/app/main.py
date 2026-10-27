@@ -11,6 +11,7 @@ from pathlib import Path
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
 
+from backend.app.analyzers.audio import BadAudioError, analyze_audio
 from backend.app.analyzers.files import analyze_file, check_file
 from backend.app.analyzers.image import BadImageError, analyze_image
 from backend.app.analyzers.text import analyze_text
@@ -22,6 +23,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name
 app = FastAPI(title="TrueTick", version="0.2.0")
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp"}
+AUDIO_EXT = (".ogg", ".opus", ".oga", ".m4a", ".mp3", ".wav", ".aac", ".amr", ".webm")
 
 
 @app.get("/api/health")
@@ -71,12 +73,11 @@ async def check_anything(
         except BadImageError as e:
             raise HTTPException(400, str(e)) from e
 
-    if mime.startswith("audio/"):
-        return Verdict(
-            risk="unknown", input_type="audio",
-            summary="Voice note checking is coming next. For now, type what was said and check that.",
-            advice=["If a voice asks for money, codes or secrecy, hang up and call the person back on a number you know"],
-        )
+    if mime.startswith("audio/") or name.lower().endswith(AUDIO_EXT):
+        try:
+            return await analyze_audio(data, caption=text)
+        except BadAudioError as e:
+            raise HTTPException(400, str(e)) from e
 
     return analyze_file(name, mime, data)
 

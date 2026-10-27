@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     text_model: str = "muse-spark-1.3"
     vision_model: str = "muse-spark-1.3"
     segment_model: str = "sam-3.1"
+    transcribe_model: str = "muse-voice-transcribe-1.0"
+    image_model: str = "muse-image-1.0"
 
     max_upload_mb: int = 16
 

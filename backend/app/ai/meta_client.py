@@ -125,6 +125,50 @@ async def respond(
     return events
 
 
+async def transcribe(wav: bytes, transport: httpx.AsyncBaseTransport | None = None) -> str:
+    """Muse Voice Transcribe: WAV (PCM 16-bit mono, 16/24 kHz, max 10 min) → text."""
+    base, headers = _base_and_headers()
+    model = get_settings().transcribe_model
+    async with httpx.AsyncClient(timeout=180, transport=transport) as client:
+        try:
+            r = await client.post(
+                f"{base}/asr/transcribe", headers=headers,
+                data={"model": model}, files={"file": ("audio.wav", wav, "audio/wav")},
+            )
+        except httpx.HTTPError as e:
+            raise MetaAPIError(f"Couldn't reach Muse Voice Transcribe ({e.__class__.__name__}).") from e
+    if r.status_code >= 400:
+        raise _fail(r.status_code, r.text)
+    try:
+        return transcript_from_response(r.json())
+    except ValueError as e:
+        raise MetaAPIError(f"Unexpected transcription reply: {r.text[:300]}") from e
+
+
+def transcript_from_response(data) -> str:
+    """Pull the transcript out of the reply, whichever common shape it uses."""
+    if isinstance(data, str):
+        return data
+    if isinstance(data, list):
+        return " ".join(t for t in (transcript_from_response(x) for x in data) if t)
+    if not isinstance(data, dict):
+        return ""
+    for key in ("text", "transcript", "transcription"):
+        value = data.get(key)
+        if isinstance(value, str) and value.strip():
+            return value
+        if isinstance(value, (dict, list)):
+            found = transcript_from_response(value)
+            if found:
+                return found
+    for key in ("segments", "turns", "results", "utterances", "output"):
+        if isinstance(data.get(key), list):
+            found = transcript_from_response(data[key])
+            if found:
+                return found
+    return ""
+
+
 def output_text(events: list[dict]) -> str:
     """Assemble the text answer from Responses API events."""
     deltas = [e.get("delta", "") for e in events if str(e.get("type", "")).endswith("output_text.delta")]
