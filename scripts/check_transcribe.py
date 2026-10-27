@@ -37,13 +37,11 @@ async def main(path: Path) -> None:
         print(f"❌ {e}")
         sys.exit(1)
     model = get_settings().transcribe_model
-    variants = [
-        {"model": model},
-        {"model": model, "language": "en"},
-        {"model": model, "languages": ["en"]},
-        {"model": model, "mode": "PUSH_TO_TALK"},
-        {},
-    ]
+    variants = []
+    for enc in ("WAV", "LINEAR16", "PCM_S16LE", "PCM", "wav", "pcm_s16le", "linear16", "AUDIO_ENCODING_WAV"):
+        variants.append({"model": model, "audioEncoding": enc})
+        variants.append({"model": model, "audioEncoding": enc, "sampleRate": 16000})
+        variants.append({"model": model, "audioEncoding": enc, "sampleRateHertz": 16000})
     async with httpx.AsyncClient(timeout=180) as client:
         for request in variants:
             print(f"\nTrying request settings: {json.dumps(request)}")
@@ -55,6 +53,9 @@ async def main(path: Path) -> None:
             except ValueError:
                 body, raw = None, r.text
             print(f"  HTTP {r.status_code}: {raw[:700]}")
+            if r.status_code >= 400 and "audioEncoding" not in raw and "sampleRate" not in raw:
+                print("\n➡️ New error (not about audioEncoding). Send me this output so I can fix the next field.")
+                return
             if r.status_code < 400 and body is not None:
                 text = transcript_from_response(body)
                 if text:
