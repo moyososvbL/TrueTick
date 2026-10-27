@@ -1,0 +1,170 @@
+{
+  "_about": "Known scam formats, distilled from real scam scripts circulating in scammer groups. Contains NO personal data: no names, numbers, emails, addresses or verbatim scripts. Signals are short, generic phrases used to recognise each pattern.",
+  "patterns": [
+    {
+      "id": "romance_grooming",
+      "name": "Romance scam: grooming stage",
+      "category": "romance",
+      "stage": 1,
+      "description": "Builds a fast emotional bond before any money is mentioned. Messages are copy-pasted from long templates of love letters, poems and 'good morning' texts.",
+      "signals": [
+        "very intense love declarations within days",
+        "calls you 'my husband' or 'my wife' before ever meeting",
+        "you are my first and only friend on this site",
+        "long lists of personal questions (birthday, favourite colour, ideal partner, gifts you love)",
+        "repeated claims of being honest, God-fearing and 'not after your money'",
+        "distance, age and language are no barrier to true love",
+        "asks to move from the dating site to email, Kik, QQ, Telegram or WhatsApp",
+        "generic poems or good-morning messages that read like they were copied"
+      ],
+      "what_next": "Once you feel attached, a crisis appears and they ask for money. The questions you answered can also be used to guess your passwords or security answers.",
+      "advice": [
+        "Insist on a live video call before trusting them",
+        "Reverse image search their photos",
+        "Never send money, gift cards or crypto to someone you haven't met in person"
+      ]
+    },
+    {
+      "id": "romance_persona",
+      "name": "Romance scam: fake persona",
+      "category": "romance",
+      "stage": 2,
+      "description": "The scammer uses a ready-made life story that explains why they can't meet, call on video, or access their own money.",
+      "signals": [
+        "works offshore on an oil rig or ship",
+        "soldier deployed abroad; says details are a 'military secret'",
+        "widowed single parent whose spouse died of cancer, with one young child",
+        "orphan with no family left",
+        "stranded abroad (often West Africa) and staying at a church or mission house",
+        "says they can't make video or voice calls for 'security reasons'",
+        "has a high salary but no access to their bank account until they return",
+        "profile photo isn't theirs ('the account belonged to a colleague')",
+        "uses a translator to talk to you",
+        "life story contradicts itself (e.g. raised in an orphanage, later raised by mum)"
+      ],
+      "what_next": "The persona is designed so a money request later seems reasonable: they 'can't access' their own money and you are 'the only one' they trust.",
+      "advice": [
+        "Ask detailed questions and watch for contradictions",
+        "Real soldiers and oil workers can video call and access their pay",
+        "Talk to a friend or family member about the relationship"
+      ]
+    },
+    {
+      "id": "romance_money_request",
+      "name": "Romance scam: money request ('billing')",
+      "category": "romance",
+      "stage": 3,
+      "description": "A sudden emergency or opportunity that needs your money urgently. Scammers keep a menu of ready-made stories and rotate them.",
+      "signals": [
+        "child or partner suddenly in hospital; doctor needs a deposit before treatment",
+        "a 'doctor' or 'nurse' contacts you saying your partner was injured",
+        "school fees for their child, who 'already calls you daddy/mummy'",
+        "needs money for a phone so you can finally video call",
+        "stuck at a store, short of money, embarrassed",
+        "their business is failing; promises to pay back",
+        "balance needed for a flight ticket to come and meet you",
+        "leave or vacation fee for a deployed soldier",
+        "customs, delivery or clearance fee for a package or gift",
+        "a big inheritance or 'antiques' deal that will make you both rich",
+        "extreme emotional pressure, including threats of self-harm"
+      ],
+      "what_next": "Paying once leads to more requests: hospital bills grow, new fees appear, and the trip never happens.",
+      "advice": [
+        "Do not send money. A real partner will understand",
+        "Ask the 'hospital' or 'school' for an official contact you can verify independently",
+        "Report the profile to the dating site and your national fraud reporting service"
+      ]
+    },
+    {
+      "id": "money_mule_card_harvest",
+      "name": "Bank details harvest / money mule",
+      "category": "identity_theft",
+      "stage": 4,
+      "description": "Asks for your card or bank details so a 'lawyer' or 'company' can send money to your account, then asks you to forward part of it. This steals your identity and can make you an accomplice in money laundering.",
+      "signals": [
+        "a lawyer or company will wire money into your account in instalments",
+        "asks for full card number, expiry date, card limit or routing number",
+        "asks for your SSN, national ID or BVN",
+        "asks for your mother's maiden name or other security answers",
+        "tells you to withdraw the money and send part via Western Union or crypto",
+        "offers you a cut ('keep $500 for yourself')",
+        "urgent deadline to provide the details"
+      ],
+      "what_next": "Your account may be emptied or used to move stolen money. When the bank reverses the transfers, you can be held responsible.",
+      "advice": [
+        "Never share card numbers, PINs, ID numbers or security answers",
+        "Never receive money for someone and forward it",
+        "If you already shared details, call your bank immediately and freeze the card"
+      ]
+    },
+    {
+      "id": "sugar_daddy_gift_card",
+      "name": "Sugar daddy / allowance scam",
+      "category": "gift_card",
+      "description": "Offers a generous weekly allowance with 'no strings', then asks you to buy a gift card or pay a fee to 'prove your loyalty' before he pays.",
+      "signals": [
+        "offers a weekly allowance to pay your bills",
+        "sets 'rules': loyalty, respect, don't talk to other sugar daddies",
+        "can't use normal payment apps (account restricted, divorce, hacked)",
+        "asks you to buy and activate a gift card to 'test your sincerity'",
+        "promises to load a much larger amount onto your card",
+        "tells you not to tell anyone about the card",
+        "talks about bitcoin mining or trading"
+      ],
+      "what_next": "Once you share the gift card code, the money is gone. Next come 'activation' or 'clearance' fees.",
+      "advice": [
+        "Anyone asking for gift cards is a scammer",
+        "Never share gift card numbers or photos of them",
+        "Nobody pays you by first making you pay them"
+      ]
+    },
+    {
+      "id": "escort_gift_card",
+      "name": "Escort / hookup advance payment scam",
+      "category": "gift_card",
+      "description": "Promises a paid meeting but demands payment upfront in gift cards and a photo of the scratched card, then disappears or invents more fees.",
+      "signals": [
+        "payment required before meeting",
+        "only accepts gift cards (Google Play, Apple, Steam, Amazon)",
+        "asks you to scratch the card and send a photo of the code",
+        "excuses such as 'I was robbed before, so no cash'",
+        "pressure: 'are you ready now?', 'I'm getting dressed to come'"
+      ],
+      "what_next": "The person never shows up. Often a second 'security' or 'driver' fee is requested, sometimes followed by threats.",
+      "advice": [
+        "A photo of a scratched gift card is the same as handing over cash",
+        "Stop replying and block the number",
+        "Do not pay 'security' or 'driver' fees"
+      ]
+    },
+    {
+      "id": "dating_site_opener",
+      "name": "Mass dating-site opener ('site bombing')",
+      "category": "romance",
+      "stage": 0,
+      "description": "The same generic opener sent to many profiles to move victims off the platform quickly.",
+      "signals": [
+        "I'm new on this site and my pictures aren't uploaded yet",
+        "your profile says we have so much in common (without specifics)",
+        "immediately shares an email or messenger ID",
+        "very long self-description with body measurements and hobbies"
+      ],
+      "what_next": "Moving off the site removes the platform's protections and reporting tools before the grooming begins.",
+      "advice": [
+        "Keep conversations on the dating platform at first",
+        "Be wary of profiles without photos or with very generic messages"
+      ]
+    }
+  ],
+  "universal_red_flags": [
+    "payment by gift card, crypto or Western Union",
+    "a request to 'prove' trust, loyalty or sincerity with money",
+    "secrecy: 'don't tell anyone'",
+    "urgent emotional crisis plus a deadline",
+    "can't video call, ever",
+    "asks for card, bank, ID or security-question details",
+    "asks you to receive money and send it on",
+    "life story changes or contradicts itself",
+    "messages that look copied and pasted"
+  ]
+}
