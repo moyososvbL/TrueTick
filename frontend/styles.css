@@ -162,3 +162,8 @@ input[type="file"] {
 .report ul { padding-left: 22px; margin: 8px 0; }
 .report-links a { color: var(--accent); font-weight: 600; overflow-wrap: anywhere; }
 .report-note { color: var(--muted); font-size: 0.95rem; margin: 10px 0; }
+.marked-image { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--border); display: block; }
+.button-link {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 22px;
+  border-radius: 12px; border: 2px solid var(--border); color: var(--text); font-weight: 700; text-decoration: none;
+}

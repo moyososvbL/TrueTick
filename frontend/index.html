@@ -44,6 +44,12 @@
       <p class="scam-type" id="scam-type"></p>
       <p class="summary" id="summary"></p>
 
+      <div class="block" id="marked-block" hidden>
+        <h2>What we spotted on the image</h2>
+        <img id="marked-image" class="marked-image" alt="The uploaded image with suspicious areas outlined in red">
+        <ul id="marked-list"></ul>
+      </div>
+
       <div class="block" id="extracted-block" hidden>
         <h2 id="extracted-title">What we found inside</h2>
         <p class="extracted" id="extracted"></p>
@@ -68,7 +74,19 @@
       <div class="row actions">
         <button type="button" id="share-btn" class="primary">Share with family</button>
         <button type="button" id="report-btn" class="ghost" hidden>Report this scam</button>
+        <button type="button" id="card-btn" class="ghost" hidden>Make a warning card for family</button>
         <button type="button" id="again-btn" class="ghost">Check another</button>
+      </div>
+
+      <div class="report" id="card-panel" hidden>
+        <h2>Warning card for family</h2>
+        <p class="report-note" id="card-status">Creating your card…</p>
+        <img id="card-image" class="marked-image" alt="A scam warning card to share with family" hidden>
+        <div class="row">
+          <button type="button" id="card-share-btn" class="primary" hidden>Share card</button>
+          <a id="card-download" class="ghost button-link" download="truetick-warning.png" hidden>Download</a>
+        </div>
+        <p class="report-note">The card only describes the type of scam. Your own message is never included.</p>
       </div>
 
       <div class="report" id="report-panel" hidden>

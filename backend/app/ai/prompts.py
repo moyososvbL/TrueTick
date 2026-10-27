@@ -79,9 +79,16 @@ website, social media post, payment receipt, or a photo.
    user's own bank app before releasing goods or refunding anything.
 4. Lookalike logos, fake verified badges and official-looking layouts do not prove anything.
 
-Add these two fields to the JSON:
+Add these fields to the JSON:
   "image_kind": "receipt" | "chat" | "sms" | "email" | "website" | "social_post" | "document" | "photo" | "other",
-  "extracted_text": "all text you can read in the image"
+  "extracted_text": "all text you can read in the image",
+  "suspicious_regions": [
+    {"label": "short reason, e.g. 'Amount in a different font'", "box": [x1, y1, x2, y2]}
+  ]
+"box" marks the area on the image using a 0-1000 scale for both axes (0,0 = top-left,
+1000,1000 = bottom-right). Mark at most 4 areas, only where there is a concrete visual problem
+(edited-looking amount or name, mismatched font, pasted patch, fake link, fake badge, request for a
+code). Use an empty list if nothing specific in the image is suspicious.
 """
 
 

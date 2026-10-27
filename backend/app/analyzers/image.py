@@ -18,6 +18,7 @@ from backend.app.analyzers.text import analyze_text
 from backend.app.checks.link_inspect import inspect_links
 from backend.app.checks.links import extract_urls, run_checks
 from backend.app.config import get_settings
+from backend.app.forensics.annotate import annotate
 from backend.app.models import Finding, Verdict
 
 log = logging.getLogger("truetick.image")
@@ -71,6 +72,15 @@ async def _read_with_vision(data: bytes, mime: str, caption: str) -> Verdict:
         seen = {f.message for f in findings}
         findings += [f for f in await inspect_links(extract_urls(verdict.extracted_text)) if f.message not in seen]
     verdict = apply_findings(verdict, findings)
+    regions = [r for r in (model_data.get("suspicious_regions") or []) if isinstance(r, dict)]
+    if regions:
+        try:
+            verdict.annotated_image = annotate(data, regions)
+        except Exception as e:  # drawing is a bonus; never fail the check because of it
+            log.error("Couldn't draw regions: %s", e)
+        if verdict.annotated_image:
+            verdict.marked_regions = [f"{n}. {str(r.get('label', '')).strip()}" for n, r in enumerate(regions[:6], 1)
+                                      if r.get("label")]
     if str(model_data.get("image_kind", "")).lower() == "receipt" and RECEIPT_ADVICE not in verdict.advice:
         verdict.advice = [RECEIPT_ADVICE] + verdict.advice[:2]
     return verdict

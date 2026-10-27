@@ -39,6 +39,12 @@ function render(v) {
   fillList($("reasons"), [...new Set(reasons)]);
   $("reasons-block").hidden = reasons.length === 0;
 
+  const marked = v.annotated_image || "";
+  $("marked-block").hidden = !marked;
+  if (marked) $("marked-image").src = marked;
+  else $("marked-image").removeAttribute("src");
+  fillList($("marked-list"), v.marked_regions || []);
+
   const inside = v.extracted_text || "";
   $("extracted-title").textContent =
     v.input_type === "audio" ? "What the voice note says" :
@@ -55,8 +61,11 @@ function render(v) {
   fillList($("advice"), v.advice || []);
   $("advice-block").hidden = !(v.advice || []).length;
 
-  $("report-btn").hidden = !["high", "medium"].includes(v.risk);
+  const risky = ["high", "medium"].includes(v.risk);
+  $("report-btn").hidden = !risky;
+  $("card-btn").hidden = !risky;
   $("report-panel").hidden = true;
+  $("card-panel").hidden = true;
 
   result.hidden = false;
   result.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -177,7 +186,7 @@ async function loadReport() {
   const res = await fetch("/api/report", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ verdict: lastVerdict, country: $("country").value }),
+    body: JSON.stringify({ verdict: { ...lastVerdict, annotated_image: "" }, country: $("country").value }),
   });
   lastReport = await res.json();
   const o = lastReport.options;
@@ -211,3 +220,43 @@ $("copy-report-btn").addEventListener("click", async () => {
   } catch (_) {}
 });
 loadCountries();
+
+// ---------- Family warning card (Muse Image illustration + TrueTick text) ----------
+let cardBlob = null;
+
+$("card-btn").addEventListener("click", async () => {
+  if (!lastVerdict) return;
+  $("card-panel").hidden = false;
+  $("card-status").textContent = "Creating your card… (the first one of each type takes a few seconds)";
+  $("card-status").hidden = false;
+  $("card-image").hidden = true;
+  $("card-share-btn").hidden = true;
+  $("card-download").hidden = true;
+  $("card-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+  try {
+    const res = await fetch("/api/card", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pattern_id: lastVerdict.pattern_id, scam_type: lastVerdict.scam_type || "" }),
+    });
+    if (!res.ok) throw new Error();
+    cardBlob = await res.blob();
+    const url = URL.createObjectURL(cardBlob);
+    $("card-image").src = url;
+    $("card-image").hidden = false;
+    $("card-download").href = url;
+    $("card-download").hidden = false;
+    $("card-share-btn").hidden = !(navigator.canShare && navigator.canShare({ files: [new File([cardBlob], "a.png", { type: "image/png" })] }));
+    $("card-status").hidden = true;
+  } catch (_) {
+    $("card-status").textContent = "Sorry, we couldn't make the card right now. Please try again.";
+  }
+});
+
+$("card-share-btn").addEventListener("click", async () => {
+  if (!cardBlob) return;
+  try {
+    await navigator.share({ files: [new File([cardBlob], "truetick-warning.png", { type: "image/png" })],
+                            title: "Scam alert", text: "Please read this and stay safe." });
+  } catch (_) {}
+});

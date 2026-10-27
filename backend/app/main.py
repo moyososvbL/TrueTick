@@ -9,9 +9,11 @@ import logging
 from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from backend.app import cards
 from backend.app.analyzers.audio import BadAudioError, analyze_audio
 from backend.app.analyzers.files import analyze_file, check_file
 from backend.app.analyzers.image import BadImageError, analyze_image
@@ -79,6 +81,19 @@ async def report(req: ReportRequest):
         "options": report_helper.report_options(req.country, intimate_images=req.verdict.is_threat),
         "summary": report_helper.report_summary(req.verdict, req.what_happened),
     }
+
+
+class CardRequest(BaseModel):
+    pattern_id: str | None = Field(default=None, max_length=60)
+    scam_type: str = Field(default="", max_length=80)
+
+
+@app.post("/api/card")
+async def warning_card(req: CardRequest):
+    """A shareable family warning card for a scam TYPE. The user's own message is never sent."""
+    site = get_settings().public_url or "TrueTick"
+    png, illustrated = await cards.make_card(req.pattern_id, req.scam_type, site)
+    return Response(png, media_type="image/png", headers={"X-Illustrated-By": "muse-image" if illustrated else "none"})
 
 
 @app.get("/api/stats")

@@ -176,6 +176,28 @@ def transcript_from_response(data) -> str:
     return ""
 
 
+async def generate_image(prompt: str, size: str = "1024x1024",
+                         transport: httpx.AsyncBaseTransport | None = None) -> bytes:
+    """Muse Image: text → PNG bytes (POST /images/generations, about $0.01 per image)."""
+    import base64
+
+    base, headers = _base_and_headers()
+    payload = {"model": get_settings().image_model, "prompt": prompt, "n": 1, "size": size,
+               "response_format": "b64_json", "output_format": "png"}
+    async with httpx.AsyncClient(timeout=180, transport=transport) as client:
+        try:
+            r = await client.post(f"{base}/images/generations", json=payload, headers=headers)
+        except httpx.HTTPError as e:
+            raise MetaAPIError(f"Couldn't reach Muse Image ({e.__class__.__name__}).") from e
+    if r.status_code >= 400:
+        raise _fail(r.status_code, r.text)
+    try:
+        b64 = r.json()["data"][0]["b64_json"]
+        return base64.b64decode(b64)
+    except (KeyError, IndexError, ValueError, TypeError) as e:
+        raise MetaAPIError(f"Unexpected Muse Image reply: {r.text[:300]}") from e
+
+
 def output_text(events: list[dict]) -> str:
     """Assemble the text answer from Responses API events."""
     deltas = [e.get("delta", "") for e in events if str(e.get("type", "")).endswith("output_text.delta")]
