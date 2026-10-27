@@ -63,8 +63,17 @@ async def main(path: Path, prompt: str) -> None:
             print(json.dumps(shorten(e), indent=2)[:1500])
 
 
+def _require_file(path: Path) -> Path:
+    if not path.is_file():
+        print(f"❌ File not found: {path}")
+        print("Put the file in your TrueTick folder and use its exact name (including .jpg/.png/.ogg),")
+        print('or give the full path in quotes, e.g. "C:/Users/pc/Pictures/receipt.jpg"')
+        sys.exit(1)
+    return path
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print('Usage: python scripts/check_sam.py path/to/image.jpg "what to find"')
         sys.exit(1)
-    asyncio.run(main(Path(sys.argv[1]), sys.argv[2] if len(sys.argv) > 2 else "text"))
+    asyncio.run(main(_require_file(Path(sys.argv[1])), sys.argv[2] if len(sys.argv) > 2 else "text"))

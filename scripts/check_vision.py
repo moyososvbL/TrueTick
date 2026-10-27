@@ -39,8 +39,17 @@ async def main(path: Path) -> None:
         print("First event:", str(events[0])[:500] if events else "none")
 
 
+def _require_file(path: Path) -> Path:
+    if not path.is_file():
+        print(f"❌ File not found: {path}")
+        print("Put the file in your TrueTick folder and use its exact name (including .jpg/.png/.ogg),")
+        print('or give the full path in quotes, e.g. "C:/Users/pc/Pictures/receipt.jpg"')
+        sys.exit(1)
+    return path
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Usage: python scripts/check_vision.py path/to/image.jpg")
         sys.exit(1)
-    asyncio.run(main(Path(sys.argv[1])))
+    asyncio.run(main(_require_file(Path(sys.argv[1]))))
