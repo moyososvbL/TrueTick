@@ -130,3 +130,24 @@ footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0
 @media (max-width: 480px) {
   .row button { flex: 1 1 100%; }
 }
+
+.upload-label { margin-top: 16px; font-weight: 600; }
+input[type="file"] {
+  width: 100%;
+  font: inherit;
+  padding: 14px;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+}
+.file-name { color: var(--muted); font-size: 0.95rem; margin: 8px 0 0; }
+.extracted {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

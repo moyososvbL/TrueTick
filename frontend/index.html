@@ -26,10 +26,14 @@
 
     <form id="check-form" class="card">
       <label for="message">Paste the message here</label>
-      <textarea id="message" name="message" rows="7" maxlength="8000" required
+      <textarea id="message" name="message" rows="7" maxlength="8000"
         placeholder="Example: Your bank account has been blocked. Send the OTP we just sent you to unlock it."></textarea>
+      <label for="file" class="upload-label">Or upload a screenshot, photo of a QR code, voice note or file</label>
+      <input type="file" id="file" name="file"
+        accept="image/*,audio/*,.opus,.ogg,.m4a,.mp3,.wav,.aac,.amr,.apk,.pdf,.doc,.docx">
+      <p class="file-name" id="file-name" hidden></p>
       <div class="row">
-        <button type="submit" id="check-btn" class="primary">Check message</button>
+        <button type="submit" id="check-btn" class="primary">Check it</button>
         <button type="button" id="example-btn" class="ghost">Try an example</button>
       </div>
       <p class="privacy">🔒 We don't save what you paste. It's only used to check it.</p>
@@ -39,6 +43,11 @@
       <div class="risk-badge" id="risk-badge"></div>
       <p class="scam-type" id="scam-type"></p>
       <p class="summary" id="summary"></p>
+
+      <div class="block" id="extracted-block" hidden>
+        <h2 id="extracted-title">What we found inside</h2>
+        <p class="extracted" id="extracted"></p>
+      </div>
 
       <div class="block" id="reasons-block">
         <h2>Why</h2>

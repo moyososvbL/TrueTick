@@ -39,6 +39,13 @@ function render(v) {
   fillList($("reasons"), [...new Set(reasons)]);
   $("reasons-block").hidden = reasons.length === 0;
 
+  const inside = v.extracted_text || "";
+  $("extracted-title").textContent =
+    v.input_type === "audio" ? "What the voice note says" :
+    v.input_type === "image" ? "Text we read from the image" : "What we found inside";
+  $("extracted").textContent = inside.length > 1200 ? inside.slice(0, 1200) + "…" : inside;
+  $("extracted-block").hidden = !inside;
+
   $("what-next").textContent = v.what_next || "";
   $("next-block").hidden = !v.what_next;
 
@@ -52,27 +59,35 @@ function render(v) {
 async function check(event) {
   event.preventDefault();
   const text = $("message").value.trim();
-  if (!text) return;
+  const file = $("file").files[0];
+  if (!text && !file) {
+    $("message").focus();
+    return;
+  }
   const btn = $("check-btn");
   btn.disabled = true;
-  btn.textContent = "Checking…";
+  btn.textContent = file && file.type.startsWith("audio") ? "Listening…" : "Checking…";
   try {
-    const res = await fetch("/api/check/text", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const form = new FormData();
+    if (text) form.append("text", text);
+    if (file) form.append("file", file);
+    const res = await fetch("/api/check", { method: "POST", body: form });
+    if (!res.ok) {
+      let detail = "";
+      try { detail = (await res.json()).detail || ""; } catch (_) {}
+      throw new Error(typeof detail === "string" && detail ? detail : `HTTP ${res.status}`);
+    }
     render(await res.json());
   } catch (err) {
+    const msg = err && err.message && !err.message.startsWith("HTTP") ? err.message : "";
     render({
       risk: "unknown",
-      summary: "Something went wrong while checking. Please try again in a moment.",
+      summary: msg || "Something went wrong while checking. Please try again in a moment.",
       advice: ["Meanwhile, don't send money, codes or card details."],
     });
   } finally {
     btn.disabled = false;
-    btn.textContent = "Check message";
+    btn.textContent = "Check it";
   }
 }
 
@@ -106,9 +121,16 @@ async function share() {
 
 $("check-form").addEventListener("submit", check);
 $("share-btn").addEventListener("click", share);
+$("file").addEventListener("change", () => {
+  const f = $("file").files[0];
+  $("file-name").textContent = f ? `Selected: ${f.name}` : "";
+  $("file-name").hidden = !f;
+});
 $("again-btn").addEventListener("click", () => {
   $("result").hidden = true;
   $("message").value = "";
+  $("file").value = "";
+  $("file-name").hidden = true;
   $("message").focus();
 });
 $("example-btn").addEventListener("click", () => {
