@@ -11,7 +11,7 @@ RISK_ORDER = {"unknown": 0, "low": 1, "medium": 2, "high": 3}
 class Finding(BaseModel):
     """A fact found by a non-AI check (links, lookalike letters, QR codes, files...)."""
 
-    kind: Literal["link", "lookalike", "qr", "file"]
+    kind: Literal["link", "lookalike", "qr", "file", "community"]
     severity: Literal["high", "medium"]
     message: str
 
@@ -29,6 +29,7 @@ class Verdict(BaseModel):
     ai_used: bool = False
     input_type: Literal["text", "image", "audio", "file"] = "text"
     extracted_text: str = ""  # e.g. what a QR code contains, or a voice note transcript
+    community_reports: int = 0  # how often its links/numbers were reported on TrueTick in the last 7 days
 
 
 class CheckTextRequest(BaseModel):

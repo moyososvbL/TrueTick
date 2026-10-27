@@ -16,6 +16,7 @@ from backend.app.analyzers.files import analyze_file, check_file
 from backend.app.analyzers.image import BadImageError, analyze_image
 from backend.app.analyzers.text import analyze_text
 from backend.app.config import get_settings
+from backend.app.intel import reports
 from backend.app.models import CheckTextRequest, Verdict
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -35,7 +36,7 @@ async def health():
 @app.post("/api/check/text", response_model=Verdict)
 async def check_text(req: CheckTextRequest) -> Verdict:
     # Privacy: we never log or store the message itself.
-    return await analyze_text(req.text)
+    return reports.annotate(await analyze_text(req.text), req.text)
 
 
 async def _read_limited(upload: UploadFile) -> bytes:
@@ -54,6 +55,17 @@ async def check_anything(
     file: UploadFile | None = File(default=None),
 ) -> Verdict:
     """One endpoint for everything: text, screenshots/photos, voice notes and files."""
+    verdict = await _route(text, file)
+    return reports.annotate(verdict, text)
+
+
+@app.get("/api/stats")
+async def stats():
+    """Anonymous weekly totals (no message content) for a future Scam Weather Report."""
+    return reports.weekly_stats()
+
+
+async def _route(text: str, file: UploadFile | None) -> Verdict:
     if file is None or not file.filename:
         if not text.strip():
             raise HTTPException(422, "Send a message or a file to check.")

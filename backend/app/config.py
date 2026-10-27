@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     image_model: str = "muse-image-1.0"
 
     max_upload_mb: int = 16
+    data_dir: str = "data"  # local SQLite for community reports (no message content stored)
 
 
 @lru_cache
