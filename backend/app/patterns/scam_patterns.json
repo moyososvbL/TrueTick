@@ -154,6 +154,140 @@
         "Keep conversations on the dating platform at first",
         "Be wary of profiles without photos or with very generic messages"
       ]
+    },
+    {
+      "id": "voice_clone_family_emergency",
+      "name": "AI voice clone family emergency",
+      "category": "impersonation",
+      "description": "A call or voice note that sounds exactly like a relative (often a child or grandchild) in an accident, arrested or stranded, demanding urgent money. The voice can be cloned from a few seconds of social media video.",
+      "signals": [
+        "sounds like a family member but calls from a new or unknown number",
+        "accident, arrest, hospital or kidnapping emergency",
+        "urgent payment by transfer, crypto or gift card",
+        "asks you to keep it secret from other family members",
+        "a 'lawyer', 'officer' or 'doctor' takes over the call",
+        "pressure not to hang up or call anyone back"
+      ],
+      "what_next": "Once you pay, a second 'bail', 'hospital' or 'court' fee follows.",
+      "advice": [
+        "Hang up and call your relative back on the number you already have",
+        "Agree on a family code word for real emergencies",
+        "Judge the request, not the voice: voices can be faked perfectly"
+      ]
+    },
+    {
+      "id": "deepfake_executive",
+      "name": "Deepfake boss / executive payment request",
+      "category": "business",
+      "description": "An email, message or even a live video call that appears to come from a boss or company executive, asking an employee to make an urgent, confidential payment or change supplier bank details.",
+      "signals": [
+        "urgent, confidential payment request from a 'CEO' or 'director'",
+        "new or changed bank details for a supplier or invoice",
+        "instructions to bypass normal approval steps",
+        "video call where faces or voices seem slightly off, or cameras are 'broken'",
+        "sent from a personal email or new phone number"
+      ],
+      "what_next": "The money goes to a scammer-controlled account and is moved on within minutes.",
+      "advice": [
+        "Verify any payment request through a separate, known channel",
+        "Never change bank details based on an email or message alone",
+        "Follow your company's approval process, even under pressure"
+      ]
+    },
+    {
+      "id": "pig_butchering_investment",
+      "name": "Fake investment platform ('pig butchering')",
+      "category": "investment",
+      "description": "A friendly or romantic contact, built up over weeks or months, introduces you to a 'secret' crypto or trading platform. The app shows huge fake profits to make you invest more.",
+      "signals": [
+        "online friend or partner who talks about their trading or crypto success",
+        "asks you to join a specific app or website to invest",
+        "guaranteed or very high returns",
+        "small first withdrawal works, to win your trust",
+        "pressure to invest more before a 'window' closes",
+        "withdrawal blocked until you pay 'tax', 'fees' or 'unlock deposit'"
+      ],
+      "what_next": "You can't withdraw. Every withdrawal attempt brings a new fee until you stop paying; then the contact disappears.",
+      "advice": [
+        "Never invest through a platform someone you met online recommends",
+        "Check if the platform is registered with your country's financial regulator",
+        "If you can't withdraw, stop paying any fees"
+      ]
+    },
+    {
+      "id": "recovery_scam",
+      "name": "Recovery scam (scammed twice)",
+      "category": "recovery",
+      "description": "After someone loses money to a scam, a 'lawyer', 'hacker', 'crypto recovery expert' or fake police officer offers to get the money back for an upfront fee.",
+      "signals": [
+        "contacts you after you lost money to a scam",
+        "claims to be law enforcement, a lawyer or a recovery service",
+        "guarantees to recover your funds",
+        "asks for an upfront fee, 'tax' or 'processing' payment",
+        "knows details of your earlier loss"
+      ],
+      "what_next": "The fee is stolen too, and more 'fees' follow.",
+      "advice": [
+        "Real police and regulators never charge to recover money",
+        "Report losses only through official channels you look up yourself",
+        "Warn family members who were scammed before: they are prime targets"
+      ]
+    },
+    {
+      "id": "bank_safe_account",
+      "name": "Fake bank 'safe account' transfer",
+      "category": "impersonation",
+      "description": "A call or message from the 'bank fraud team' says your account is compromised and pressures you to move your money to a 'safe account' or wallet. Because you authorize the transfer yourself, the bank may not refund it.",
+      "signals": [
+        "caller ID or SMS shows your bank's real name or number",
+        "says your account has been hacked or flagged",
+        "tells you to move money to a 'safe' or 'new' account",
+        "asks you to install an app or share your screen",
+        "stays on the line while you make the transfer",
+        "knows your name and some account details"
+      ],
+      "what_next": "The 'safe account' belongs to the scammer and the money is moved on instantly.",
+      "advice": [
+        "A real bank will never ask you to move money to a 'safe account'",
+        "Hang up and call the number on the back of your card",
+        "Never install apps or share your screen on a caller's instructions"
+      ]
+    },
+    {
+      "id": "accidental_payment_refund",
+      "name": "'I sent you money by mistake' refund",
+      "category": "payment",
+      "description": "Money lands in your account or payment app from a stranger, followed by a message begging you to refund it. The original payment is stolen or fake and gets reversed, so your refund is your own money.",
+      "signals": [
+        "unexpected payment from someone you don't know",
+        "urgent message: 'I sent it to you by mistake, please send it back'",
+        "asks you to refund to a different account or number",
+        "fake credit alert or screenshot instead of a real deposit"
+      ],
+      "what_next": "The original payment is reversed or was never real, and you lose what you sent.",
+      "advice": [
+        "Don't refund it yourself: contact your bank or payment app",
+        "Check your actual balance in the official app, not a screenshot or SMS",
+        "Let the bank handle the reversal"
+      ]
+    },
+    {
+      "id": "qr_code_phishing",
+      "name": "QR code phishing ('quishing')",
+      "category": "phishing",
+      "description": "A fake QR code, often a sticker pasted over a real one on a parking meter, menu, poster or letter, leads to a cloned payment or login page.",
+      "signals": [
+        "QR code sticker placed on top of another one",
+        "QR code in an unexpected email, letter or parcel note",
+        "the page asks for card details or a login right after scanning",
+        "web address doesn't match the business you're paying"
+      ],
+      "what_next": "Card numbers and login details entered on the fake page are stolen and used immediately.",
+      "advice": [
+        "Check the web address after scanning before entering anything",
+        "Pay through the official app or website you look up yourself",
+        "Report tampered QR codes to the business"
+      ]
     }
   ],
   "universal_red_flags": [
