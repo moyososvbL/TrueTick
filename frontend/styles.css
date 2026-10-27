@@ -1,0 +1,132 @@
+:root {
+  --bg: #f6f7f4;
+  --surface: #ffffff;
+  --text: #1b1f1d;
+  --muted: #5b6460;
+  --border: #dde2dd;
+  --accent: #0f7b5f;
+  --accent-hover: #0b6650;
+  --on-accent: #ffffff;
+  --high: #c62828;
+  --high-bg: #fdecea;
+  --medium: #a15c00;
+  --medium-bg: #fff4e0;
+  --low: #1e7d32;
+  --low-bg: #e8f5e9;
+  --unknown: #455a64;
+  --unknown-bg: #eceff1;
+  --radius: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121514;
+    --surface: #1b201e;
+    --text: #eef2ef;
+    --muted: #a3ada8;
+    --border: #2d3431;
+    --accent: #3fbf96;
+    --accent-hover: #5fd3ad;
+    --on-accent: #08261d;
+    --high: #ff8a80;
+    --high-bg: #3a1d1b;
+    --medium: #ffc66d;
+    --medium-bg: #3a2c12;
+    --low: #81c784;
+    --low-bg: #1c3320;
+    --unknown: #b0bec5;
+    --unknown-bg: #263238;
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 18px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.top { padding: 16px; max-width: 760px; margin: 0 auto; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.logo { width: 36px; height: 36px; }
+.name { font-weight: 800; font-size: 1.3rem; letter-spacing: -0.01em; }
+
+main { max-width: 760px; margin: 0 auto; padding: 0 16px 40px; }
+
+.intro h1 { font-size: clamp(1.7rem, 5vw, 2.4rem); line-height: 1.2; margin: 12px 0 8px; }
+.intro p { color: var(--muted); margin: 0 0 20px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+label { display: block; font-weight: 700; margin-bottom: 8px; }
+
+textarea {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  resize: vertical;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+
+.row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+
+button {
+  font: inherit;
+  font-weight: 700;
+  min-height: 52px;
+  padding: 0 22px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+button.primary { background: var(--accent); color: var(--on-accent); }
+button.primary:hover { background: var(--accent-hover); }
+button.ghost { background: transparent; color: var(--text); border-color: var(--border); }
+button:disabled { opacity: 0.6; cursor: wait; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.privacy, .disclaimer { color: var(--muted); font-size: 0.9rem; margin: 14px 0 0; }
+
+.risk-badge {
+  display: inline-block;
+  font-weight: 800;
+  font-size: 1.25rem;
+  padding: 8px 16px;
+  border-radius: 999px;
+}
+.risk-high { color: var(--high); background: var(--high-bg); }
+.risk-medium { color: var(--medium); background: var(--medium-bg); }
+.risk-low { color: var(--low); background: var(--low-bg); }
+.risk-unknown { color: var(--unknown); background: var(--unknown-bg); }
+
+.result.risk-border-high { border-left: 8px solid var(--high); }
+.result.risk-border-medium { border-left: 8px solid var(--medium); }
+.result.risk-border-low { border-left: 8px solid var(--low); }
+.result.risk-border-unknown { border-left: 8px solid var(--unknown); }
+
+.scam-type { font-weight: 700; margin: 12px 0 0; }
+.summary { font-size: 1.15rem; margin: 6px 0 0; }
+
+.block h2, .rules h2 { font-size: 1.05rem; margin: 20px 0 6px; }
+.rules h2 { margin-top: 0; }
+.block ul, .rules ul { margin: 0; padding-left: 22px; }
+.block li, .rules li { margin: 6px 0; }
+.next p { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--medium-bg); }
+
+footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 0 16px 32px; }
+
+@media (max-width: 480px) {
+  .row button { flex: 1 1 100%; }
+}
