@@ -76,9 +76,49 @@ def test_apk_named_as_image_is_still_caught():
     assert r.json()["risk"] == "high"
 
 
-def test_plain_image_without_qr():
+def test_plain_image_without_qr_falls_back_when_vision_down(monkeypatch):
+    async def down(*a, **kw):
+        raise meta_client.MetaAPIError("down")
+    monkeypatch.setattr(meta_client, "upload_file", down)
     v = client.post("/api/check", files={"file": ("shot.png", plain_png(), "image/png")}).json()
     assert v["input_type"] == "image" and v["risk"] == "unknown"
+
+
+def test_screenshot_read_by_vision(monkeypatch):
+    async def fake_upload(data, name, mime, **kw):
+        return "file-1"
+
+    async def fake_respond(model, content, **kw):
+        fake_respond.content = content
+        reply = json.dumps({
+            "risk": "medium", "scam_type": "Fake bank alert", "image_kind": "sms",
+            "summary": "Asks you to verify your account via a link.",
+            "extracted_text": "Your account is restricted. Verify: http://zenora-verify-acct.top/login",
+            "reasons": ["Urgency"], "advice": ["Don't click"],
+        })
+        return [{"type": "response.output_text.delta", "delta": reply}]
+
+    monkeypatch.setattr(meta_client, "upload_file", fake_upload)
+    monkeypatch.setattr(meta_client, "respond", fake_respond)
+    v = client.post("/api/check", files={"file": ("sms.png", plain_png(), "image/png")}).json()
+    assert v["ai_used"] and v["input_type"] == "image"
+    assert "zenora-verify-acct.top" in v["extracted_text"]
+    assert any(".top" in f["message"] for f in v["findings"])  # link checks ran on the text read from the image
+    assert fake_respond.content[1] == {"type": "input_image", "file_id": "file-1"}
+
+
+def test_receipt_gets_bank_app_advice(monkeypatch):
+    async def fake_upload(*a, **kw):
+        return "file-2"
+
+    async def fake_respond(model, content, **kw):
+        return [{"type": "response.output_text.delta", "delta": json.dumps(
+            {"risk": "high", "image_kind": "receipt", "extracted_text": "Transfer Successful", "advice": ["a", "b", "c"]})}]
+
+    monkeypatch.setattr(meta_client, "upload_file", fake_upload)
+    monkeypatch.setattr(meta_client, "respond", fake_respond)
+    v = client.post("/api/check", files={"file": ("r.png", plain_png(), "image/png")}).json()
+    assert v["advice"][0].startswith("Check the real balance") and len(v["advice"]) == 3
 
 
 def test_broken_image_rejected():
