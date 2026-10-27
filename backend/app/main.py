@@ -20,12 +20,14 @@ from backend.app.analyzers.image import BadImageError, analyze_image
 from backend.app.analyzers.text import analyze_text
 from backend.app.config import get_settings
 from backend.app.intel import reports
+from backend.app.live.routes import router as live_router
 from backend.app.models import CheckTextRequest, Verdict
 from backend.app.reporting import helper as report_helper
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-app = FastAPI(title="TrueTick", version="0.2.0")
+app = FastAPI(title="TrueTick", version="0.3.0")
+app.include_router(live_router)
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp"}
 AUDIO_EXT = (".ogg", ".opus", ".oga", ".m4a", ".mp3", ".wav", ".aac", ".amr", ".webm")

@@ -111,3 +111,13 @@ Judge the most likely meaning, and add two fields to the JSON:
   "corrected_transcript": "the transcript with likely mishearings fixed (or unchanged)",
   "corrections": ["items card → iTunes card", "..."]   (empty list if nothing was changed)
 """
+
+
+LIVE_EXTRA = """
+
+The call is happening RIGHT NOW and may be unfinished. Speed matters more than detail:
+- "summary" must be one short instruction the person can act on immediately
+  (e.g. "Hang up now: banks never ask for your OTP.").
+- If nothing risky has been said yet, use "low" and say "Nothing suspicious yet. Keep listening."
+- Keep "reasons" to at most 2 items and "advice" to at most 2 items.
+"""

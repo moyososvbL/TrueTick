@@ -167,3 +167,18 @@ input[type="file"] {
   display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 22px;
   border-radius: 12px; border: 2px solid var(--border); color: var(--text); font-weight: 700; text-decoration: none;
 }
+
+.muted { color: var(--muted); }
+.live h2 { margin: 0 0 6px; font-size: 1.25rem; }
+.live-alert {
+  margin-top: 16px; padding: 18px; border-radius: 14px;
+  background: var(--high); color: #fff; animation: pulse 1s ease-in-out 3;
+}
+.live-alert p { margin: 4px 0; }
+.live-alert-title { font-size: 1.35rem; font-weight: 800; }
+.live-alert.warn { background: var(--medium); color: #1b1f1d; }
+.live-verdict { margin-top: 16px; }
+.live details { margin-top: 14px; }
+.live summary { cursor: pointer; font-weight: 700; }
+@keyframes pulse { 50% { transform: scale(1.02); } }
+@media (prefers-reduced-motion: reduce) { .live-alert { animation: none; } }

@@ -102,6 +102,31 @@
       <p class="disclaimer">TrueTick can make mistakes. When money is involved, always double-check through an official contact.</p>
     </section>
 
+
+    <section id="live" class="card live">
+      <h2>📞 Live Call Guard</h2>
+      <p class="muted">On a suspicious call? Put it on <strong>speaker</strong>, then tap Start. TrueTick listens and
+        warns you the moment the caller asks for something dangerous. Nothing is recorded or saved.</p>
+      <div class="row">
+        <button type="button" id="live-start" class="primary">Start Live Call Guard</button>
+        <button type="button" id="live-stop" class="ghost" hidden>Stop</button>
+      </div>
+      <p id="live-status" class="muted" hidden></p>
+      <div id="live-alert" class="live-alert" hidden role="alert">
+        <p class="live-alert-title" id="live-alert-title"></p>
+        <p id="live-alert-advice"></p>
+      </div>
+      <div id="live-verdict" class="live-verdict" hidden>
+        <span id="live-badge" class="risk-badge"></span>
+        <p id="live-type" class="scam-type"></p>
+        <p id="live-summary" class="summary"></p>
+      </div>
+      <details id="live-transcript-block" hidden>
+        <summary>What we heard</summary>
+        <p id="live-transcript" class="extracted"></p>
+      </details>
+    </section>
+
     <section class="card rules">
       <h2>Golden rules</h2>
       <ul>

@@ -260,3 +260,117 @@ $("card-share-btn").addEventListener("click", async () => {
                             title: "Scam alert", text: "Please read this and stay safe." });
   } catch (_) {}
 });
+
+
+// ---------- Live Call Guard ----------
+// Records the (speakerphone) call in short complete pieces, sends each to /api/live/chunk
+// (Muse Voice Transcribe + instant checks), and asks Muse Spark about the whole call every few pieces.
+const LIVE_PIECE_MS = 5000;
+const live = { stream: null, recorder: null, transcript: "", running: false, pieces: 0, shown: new Set(), assessing: false };
+
+function liveStatus(text) {
+  $("live-status").textContent = text;
+  $("live-status").hidden = !text;
+}
+
+function showLiveAlert(a) {
+  if (live.shown.has(a.id)) return;
+  live.shown.add(a.id);
+  $("live-alert").className = `live-alert ${a.severity === "stop" ? "" : "warn"}`;
+  $("live-alert-title").textContent = (a.severity === "stop" ? "⚠️ STOP: " : "⚠️ Careful: ") + a.title;
+  $("live-alert-advice").textContent = a.advice;
+  $("live-alert").hidden = false;
+  if (navigator.vibrate) navigator.vibrate(a.severity === "stop" ? [400, 150, 400, 150, 400] : [300]);
+}
+
+async function liveAssess() {
+  if (live.assessing || !live.transcript) return;
+  live.assessing = true;
+  try {
+    const res = await fetch("/api/live/assess", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript: live.transcript.slice(-12000) }),
+    });
+    if (!res.ok) return;
+    const v = await res.json();
+    $("live-badge").className = `risk-badge risk-${v.risk}`;
+    $("live-badge").textContent = LABELS[v.risk] || LABELS.unknown;
+    $("live-type").textContent = v.scam_type || "";
+    $("live-summary").textContent = v.summary || "";
+    $("live-verdict").hidden = false;
+    if (v.risk === "high" && navigator.vibrate) navigator.vibrate([400, 150, 400]);
+  } catch (_) {
+  } finally {
+    live.assessing = false;
+  }
+}
+
+async function sendPiece(blob) {
+  if (blob.size < 2000) return;
+  const form = new FormData();
+  form.append("audio", blob, "piece.webm");
+  form.append("so_far", live.transcript.slice(-12000));
+  try {
+    const res = await fetch("/api/live/chunk", { method: "POST", body: form });
+    if (!res.ok) return;
+    const body = await res.json();
+    if (body.text) {
+      live.transcript = `${live.transcript} ${body.text}`.trim();
+      $("live-transcript").textContent = live.transcript;
+      $("live-transcript-block").hidden = false;
+    }
+    (body.alerts || []).forEach(showLiveAlert);
+    live.pieces += 1;
+    if (body.text && (live.pieces % 2 === 0 || (body.alerts || []).length)) liveAssess();
+  } catch (_) {}
+}
+
+function recordPiece() {
+  if (!live.running) return;
+  const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg"].find(
+    (t) => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+  const rec = new MediaRecorder(live.stream, type ? { mimeType: type } : undefined);
+  const parts = [];
+  rec.ondataavailable = (e) => e.data.size && parts.push(e.data);
+  rec.onstop = () => {
+    sendPiece(new Blob(parts, { type: rec.mimeType || "audio/webm" }));
+    recordPiece(); // start the next piece straight away so nothing is missed
+  };
+  live.recorder = rec;
+  rec.start();
+  setTimeout(() => rec.state === "recording" && rec.stop(), LIVE_PIECE_MS);
+}
+
+async function startLive() {
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    liveStatus("This browser can't listen. Try Chrome or Safari, and open TrueTick over https.");
+    return;
+  }
+  try {
+    live.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true },
+    });
+  } catch (_) {
+    liveStatus("We need microphone permission to listen. Allow it in your browser settings and try again.");
+    return;
+  }
+  Object.assign(live, { running: true, transcript: "", pieces: 0, shown: new Set() });
+  ["live-alert", "live-verdict", "live-transcript-block"].forEach((id) => ($(id).hidden = true));
+  $("live-start").hidden = true;
+  $("live-stop").hidden = false;
+  liveStatus("🎧 Listening… keep the call on speaker, near this device.");
+  recordPiece();
+}
+
+function stopLive() {
+  live.running = false;
+  if (live.recorder && live.recorder.state === "recording") live.recorder.stop();
+  if (live.stream) live.stream.getTracks().forEach((t) => t.stop());
+  $("live-start").hidden = false;
+  $("live-stop").hidden = true;
+  liveStatus(live.transcript ? "Stopped. Here's what we found." : "Stopped.");
+  setTimeout(liveAssess, 800);
+}
+
+$("live-start").addEventListener("click", startLive);
+$("live-stop").addEventListener("click", stopLive);
