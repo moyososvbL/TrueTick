@@ -47,3 +47,7 @@ def test_extract_and_run_checks():
     text = "Click www.paypal-verify.top/login now or bit.ly/abc. Normal words here."
     assert len(extract_urls(text)) == 2
     assert run_checks("Are we still meeting for lunch on Friday?") == []
+
+
+def test_link_to_apk_download():
+    assert "Android app file" in _msgs(check_url("http://quickloan-ng.app/QuickLoan.apk"))

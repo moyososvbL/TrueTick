@@ -1,0 +1,60 @@
+id,expected,category,text
+1,scam,phishing_bank,"Dear customer, your account has been suspended due to unusual activity. Verify within 24 hours at http://zenora-secure-verify.top/login or it will be closed."
+2,scam,phishing_lookalike,Microsoft: Your password expires today. Keep your current password here: https://rnicrosoft-account.com/keep
+3,scam,phishing_lookalike,"PayPal: A payment of $649.99 is pending. If this wasn't you, cancel at https://paypa1-resolution.com/cancel"
+4,scam,phishing_at_trick,Your Amazon order #114-552 was cancelled. Review here: https://amazon.com@order-review.shop/refund
+5,scam,phishing_shortener,Netflix: your payment failed. Update your billing now to avoid suspension: bit.ly/3NfxPay
+6,scam,phishing_ip,Apple ID locked for security reasons. Unlock: http://185.22.14.9/appleid/unlock
+7,scam,delivery_fee,DHL: Your package is held at customs. Pay a $2.99 release fee within 12 hours: https://dhl-parcel-release.click/pay
+8,scam,delivery_fee,FedEx: We attempted delivery but no one was home. Reschedule and pay $1.50 fee: http://fedex-redelivery.xyz
+9,scam,tax_refund,You are eligible for a tax refund of $812.40. Claim before Friday: http://gov-refund-portal.online/claim
+10,scam,whatsapp_code,"Hi, I sent a 6 digit code to your phone by mistake, please send it to me, it's urgent"
+11,scam,family_new_number,"Hi Mum, this is my new number, my phone broke. Can you send me $600 for rent today? I'll explain later, don't call I can't talk"
+12,scam,voice_clone_emergency,"Grandma it's me, I've been in a car accident and the police arrested me. I need $2,000 for bail right now. Please don't tell Mum"
+13,scam,bank_call,"This is your bank's fraud department. To stop the unauthorized transaction, please read me the CVV on the back of your card and the OTP we just sent"
+14,scam,bank_call_leaked_data,"Good afternoon Mr Adeyemi, I'm calling from your bank. I can see your account ending 4821 and your BVN. We need your card PIN to complete the upgrade"
+15,scam,safe_account,Your account has been compromised. Move all your funds to this temporary safe account 9988776655 while we investigate. Don't tell branch staff
+16,scam,wrong_transfer,"I mistakenly sent N50,000 to your account. Please refund it to 0123456789, it's for my mother's hospital bill"
+17,scam,fake_credit_alert,"Credit Alert: Acct 00****4821 Amt NGN500,000.00 from CHUKWU E. Kindly confirm and release the goods"
+18,scam,lottery,"CONGRATULATIONS! Your number won $50,000 in the WhatsApp anniversary promo. Pay $200 processing fee to claim your prize"
+19,scam,lottery,"You have been selected for a $1,000 Walmart gift card. Claim now: http://walmart-rewards-claim.site"
+20,scam,task_job,Earn $500 daily liking videos on YouTube from home! No experience. Pay $30 registration to start today. DM me on Telegram
+21,scam,task_job,"Your application was successful. To start your data entry job, buy your work laptop from our approved vendor and we'll reimburse you on your first paycheck"
+22,scam,fake_recruiter,"Hi, I'm a recruiter from a fintech startup. Before the interview, please clone and run our coding test repo, then send the output: npm install && npm start"
+23,scam,investment,"Invest $200 today and get $2,000 in 7 days guaranteed. Our crypto bot never loses. Limited slots, send USDT now"
+24,scam,pig_butchering,"My uncle taught me trading on ApexVault Pro, I made $12,000 last month. Let me help you open an account at apexvault-pro.io and start with $500"
+25,scam,withdrawal_fee,"Your balance of $18,450 is ready. To withdraw, you must first pay 20% tax ($3,690) to unlock your account"
+26,scam,recovery,We can recover the money you lost to the crypto scam. We work with Interpol. Pay a $400 activation fee and get 100% back in 72 hours
+27,scam,romance_money,"Honey, my daughter is in hospital and the doctor needs a $3,000 deposit before surgery. You're the only one I trust, please send it today"
+28,scam,romance_persona,"I'm a US Army doctor deployed in Syria. I can't video call for security reasons. My salary is locked until I return, but I want to marry you"
+29,scam,romance_flight,I've paid half of my flight ticket to come and see you but I'm short $800. Please help me with the balance so we can finally meet
+30,scam,romance_customs,"I sent you a package with gifts, jewelry and $50,000 cash. The delivery company says you must pay a $1,200 customs clearance fee"
+31,scam,sugar_daddy,"I'll pay you $1,000 weekly allowance as my sugar baby. First buy a $100 Apple gift card to prove your loyalty and send me a photo of the code"
+32,scam,gift_card,"I'm in a meeting, can you buy 5 Google Play gift cards of $100 each for a client? Scratch them and send me the codes. I'll pay you back - your boss"
+33,scam,escort_gift_card,Payment before service. I only accept Steam gift cards because I was robbed before. Scratch the card and send me a picture
+34,scam,ceo_fraud,"Urgent and confidential: our supplier changed their bank details. Please wire $48,500 to the new account today and don't discuss with anyone until the deal is announced"
+35,scam,invoice_bank_change,"Please note our new bank account for all future invoice payments: Northbridge Trust 55001289. Our old account is under audit, do not use it"
+36,scam,card_harvest,"My lawyer will wire $15,000 to your account. Send me your full card number, expiry date, SSN and mother's maiden name so he can process it, then send me $2,500 via Western Union"
+37,scam,sextortion,I have your private videos. Pay $500 in Bitcoin within 24 hours or I will send them to all your contacts. Don't go to the police
+38,scam,fake_police,"This is Inspector Musa from the cybercrime unit. A warrant has been issued for your arrest. Pay a N150,000 fine now to avoid detention"
+39,scam,visa,"100% guaranteed UK work visa in 2 weeks, no IELTS needed. Pay $1,200 processing fee today, only 3 slots left"
+40,scam,scholarship,"Congratulations, you've been awarded a fully funded scholarship to study in Canada. Pay $250 application processing fee to secure it"
+41,scam,apartment,"The flat is available. Pay N50,000 inspection fee and N300,000 agency fee first, then I'll send the address. I'm out of town"
+42,scam,malware_apk,"Hello, please download and install our new loan app to get your N200,000 loan instantly: http://quickloan-ng.app/QuickLoan.apk"
+43,scam,fake_customer_care,"Hi, I saw your complaint about your bank on Twitter. I'm from customer support, please DM me your account number and the OTP so I can fix it"
+44,scam,charity,Disaster relief: flood victims need your help today. Donate via gift cards or crypto only to this number
+45,scam,utility,Your electricity will be disconnected in 2 hours due to unpaid bill. Pay immediately through this link: http://power-bill-settle.xyz
+46,scam,subscription_refund,We charged you $399 for Norton renewal by mistake. Call +1 888 555 0199 for a refund and install AnyDesk so our technician can help
+47,scam,qr_text,Scan the QR code on your parking ticket to avoid a fine: https://city-parking-fines.top/pay
+48,safe,normal,Are we still meeting for lunch on Friday?
+49,safe,normal,"Happy birthday! Wishing you a wonderful year ahead, see you at the party on Saturday"
+50,safe,normal,"Mum, I've reached school safely. Will call you after lectures"
+51,safe,work,The meeting has been moved to 3pm tomorrow in the second floor conference room
+52,safe,legit_otp,Your verification code is 482913. It expires in 5 minutes. Never share this code with anyone.
+53,safe,legit_bank_debit,"Debit alert: Acct 00****4821 NGN 4,500.00 POS purchase at Shoprite Lekki. Bal: NGN 120,340.50"
+54,safe,legit_delivery,Your Amazon order has shipped and will arrive on Thursday. Track it in the Amazon app or at https://www.amazon.com/orders
+55,safe,legit_link,Here's the PayPal invoice for the design work as we agreed: https://www.paypal.com/invoice/p/#INV2-XK4L
+56,safe,legit_link,Check out this video I made: https://www.youtube.com/watch?v=dQw4w9WgXcQ
+57,safe,legit_reminder,Reminder: your dentist appointment is on Monday at 10am. Reply C to confirm
+58,safe,family_money_normal,"Can you send me the N5,000 we agreed for the groceries when you get home? No rush"
+59,safe,legit_security_advice,"Zenora Bank will never ask for your PIN, OTP or password. If anyone asks, hang up and call us on the number on your card"

@@ -11,6 +11,7 @@ from backend.app.checks.lookalike import (
     decode_host,
     is_official,
 )
+from backend.app.analyzers.files import DANGEROUS_EXT
 from backend.app.models import Finding
 
 URL_RE = re.compile(
@@ -65,6 +66,11 @@ def check_url(url: str) -> list[Finding]:
         add("high", f"Link goes to a bare number address ({host}) instead of a website name.")
     except ValueError:
         pass
+    file_ext = parsed.path.lower().rsplit("/", 1)[-1].rsplit(".", 1)
+    if len(file_ext) == 2 and file_ext[1] in DANGEROUS_EXT and file_ext[1] != "js":
+        add("high", f"Link downloads an {DANGEROUS_EXT[file_ext[1]]} file (.{file_ext[1]}). Installing apps from links can give scammers control of your phone."
+            if DANGEROUS_EXT[file_ext[1]][0] in "AEIOU" else
+            f"Link downloads a {DANGEROUS_EXT[file_ext[1]]} file (.{file_ext[1]}). Installing apps from links can give scammers control of your phone.")
     if "xn--" in host and not out:
         add("high", f"Link uses unusual characters that can imitate real websites ({shown}).")
     if host in SHORTENERS:
