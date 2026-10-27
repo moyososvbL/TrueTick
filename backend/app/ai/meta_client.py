@@ -125,16 +125,22 @@ async def respond(
     return events
 
 
+def transcribe_request_parts(wav: bytes, request: dict) -> dict:
+    """Multipart body for /asr/transcribe: a JSON 'request' part plus the 'audio' part."""
+    return {
+        "request": (None, json.dumps(request), "application/json"),
+        "audio": ("audio.wav", wav, "audio/wav"),
+    }
+
+
 async def transcribe(wav: bytes, transport: httpx.AsyncBaseTransport | None = None) -> str:
     """Muse Voice Transcribe: WAV (PCM 16-bit mono, 16/24 kHz, max 10 min) → text."""
     base, headers = _base_and_headers()
-    model = get_settings().transcribe_model
+    request = {"model": get_settings().transcribe_model}
     async with httpx.AsyncClient(timeout=180, transport=transport) as client:
         try:
-            r = await client.post(
-                f"{base}/asr/transcribe", headers=headers,
-                data={"model": model}, files={"file": ("audio.wav", wav, "audio/wav")},
-            )
+            r = await client.post(f"{base}/asr/transcribe", headers=headers,
+                                  files=transcribe_request_parts(wav, request))
         except httpx.HTTPError as e:
             raise MetaAPIError(f"Couldn't reach Muse Voice Transcribe ({e.__class__.__name__}).") from e
     if r.status_code >= 400:

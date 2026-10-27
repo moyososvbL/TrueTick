@@ -67,7 +67,9 @@ def test_transcribe_call(monkeypatch):
     finally:
         get_settings.cache_clear()
     assert text == "This is your bank"
-    assert seen["url"].endswith("/asr/transcribe") and b"muse-voice-transcribe-1.0" in seen["body"]
+    assert seen["url"].endswith("/asr/transcribe")
+    assert b'name="request"' in seen["body"] and b'name="audio"' in seen["body"]
+    assert b"muse-voice-transcribe-1.0" in seen["body"]
 
 
 def test_voice_note_end_to_end(monkeypatch):

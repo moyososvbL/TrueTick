@@ -13,7 +13,12 @@ import httpx
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from backend.app.ai.meta_client import _base_and_headers, MetaAPIError, transcript_from_response  # noqa: E402
+from backend.app.ai.meta_client import (  # noqa: E402
+    MetaAPIError,
+    _base_and_headers,
+    transcribe_request_parts,
+    transcript_from_response,
+)
 from backend.app.analyzers.audio import BadAudioError, to_wav_16k_mono  # noqa: E402
 from backend.app.config import get_settings  # noqa: E402
 
@@ -32,20 +37,33 @@ async def main(path: Path) -> None:
         print(f"❌ {e}")
         sys.exit(1)
     model = get_settings().transcribe_model
-    print(f"Sending to {model} ...")
+    variants = [
+        {"model": model},
+        {"model": model, "language": "en"},
+        {"model": model, "languages": ["en"]},
+        {"model": model, "mode": "PUSH_TO_TALK"},
+        {},
+    ]
     async with httpx.AsyncClient(timeout=180) as client:
-        r = await client.post(f"{base}/asr/transcribe", headers=headers,
-                              data={"model": model}, files={"file": ("audio.wav", wav, "audio/wav")})
-    print(f"HTTP {r.status_code}")
-    try:
-        body = r.json()
-        print("Raw reply (shortened):", json.dumps(body)[:1500])
-    except ValueError:
-        body = None
-        print("Raw reply:", r.text[:1500])
-    if r.status_code < 400 and body is not None:
-        text = transcript_from_response(body)
-        print(f"\n✅ Transcript: {text}" if text else "\n⚠️ Couldn't find the transcript in the reply. Send me the raw reply above.")
+        for request in variants:
+            print(f"\nTrying request settings: {json.dumps(request)}")
+            r = await client.post(f"{base}/asr/transcribe", headers=headers,
+                                  files=transcribe_request_parts(wav, request))
+            try:
+                body = r.json()
+                raw = json.dumps(body)
+            except ValueError:
+                body, raw = None, r.text
+            print(f"  HTTP {r.status_code}: {raw[:700]}")
+            if r.status_code < 400 and body is not None:
+                text = transcript_from_response(body)
+                if text:
+                    print(f"\n✅ Transcript: {text}")
+                    print(f"✅ Working settings: {json.dumps(request)}")
+                else:
+                    print("\n⚠️ Request accepted but I couldn't find the transcript. Send me the reply above.")
+                return
+    print("\n❌ None of the settings worked. Send me all the output above.")
 
 
 def _require_file(path: Path) -> Path:
