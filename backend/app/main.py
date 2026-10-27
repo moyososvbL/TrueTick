@@ -14,14 +14,17 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from backend.app import cards
+from backend.app.analyzers.conversation import MAX_IMAGES, analyze_conversation
 from backend.app.analyzers.audio import BadAudioError, analyze_audio
 from backend.app.analyzers.files import analyze_file, check_file
 from backend.app.analyzers.image import BadImageError, analyze_image
 from backend.app.analyzers.text import analyze_text
+from backend.app.checks import site_visit
+from backend.app.checks.links import extract_urls
 from backend.app.config import get_settings
 from backend.app.intel import reports
 from backend.app.live.routes import router as live_router
-from backend.app.models import CheckTextRequest, Verdict
+from backend.app.models import CheckTextRequest, SiteVisit, Verdict
 from backend.app.reporting import helper as report_helper
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -42,7 +45,7 @@ async def health():
 @app.post("/api/check/text", response_model=Verdict)
 async def check_text(req: CheckTextRequest) -> Verdict:
     # Privacy: we never log or store the message itself.
-    return reports.annotate(await analyze_text(req.text), req.text)
+    return _with_links(reports.annotate(await analyze_text(req.text), req.text), req.text)
 
 
 async def _read_limited(upload: UploadFile) -> bytes:
@@ -62,7 +65,47 @@ async def check_anything(
 ) -> Verdict:
     """One endpoint for everything: text, screenshots/photos, voice notes and files."""
     verdict = await _route(text, file)
-    return reports.annotate(verdict, text)
+    return _with_links(reports.annotate(verdict, text), text)
+
+
+def _with_links(verdict: Verdict, text: str) -> Verdict:
+    if not verdict.links:
+        verdict.links = extract_urls(f"{text}\n{verdict.extracted_text}")[:3]
+    return verdict
+
+
+@app.post("/api/check/conversation", response_model=Verdict)
+async def check_conversation(
+    files: list[UploadFile] = File(...),
+    text: str = Form(default="", max_length=2000),
+) -> Verdict:
+    """Several screenshots of one chat, read together as one story (timeline, stage, contradictions)."""
+    if not 2 <= len(files) <= MAX_IMAGES:
+        raise HTTPException(422, f"Send between 2 and {MAX_IMAGES} screenshots, in order.")
+    images = []
+    for f in files:
+        mime = (f.content_type or "").lower()
+        if mime not in IMAGE_TYPES:
+            raise HTTPException(400, "Only screenshots or photos (JPG, PNG, WebP) can be checked together.")
+        images.append((await _read_limited(f), mime))
+    try:
+        verdict = await analyze_conversation(images, caption=text)
+    except BadImageError as e:
+        raise HTTPException(400, str(e)) from e
+    return reports.annotate(verdict, verdict.extracted_text)
+
+
+class VisitRequest(BaseModel):
+    url: str = Field(min_length=4, max_length=2000)
+
+
+@app.post("/api/visit", response_model=SiteVisit)
+async def visit_site(req: VisitRequest) -> SiteVisit:
+    """Open a link in a sealed browser on our server, screenshot it and say what it's pretending to be."""
+    url = req.url.strip()
+    if "://" not in url:
+        url = "http://" + url
+    return await site_visit.visit(url)
 
 
 class ReportRequest(BaseModel):

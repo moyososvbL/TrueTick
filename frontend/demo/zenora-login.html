@@ -1,0 +1,32 @@
+<!doctype html>
+<!-- TrueTick DEMO page. "Zenora Bank" is a fictional bank. Used only to show the
+     "We visited the website for you" check. The form sends nothing anywhere. -->
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Zenora Bank | Secure Verification</title>
+<style>
+body{margin:0;font-family:system-ui,sans-serif;background:#eef2f8;color:#1a2440}
+header{background:#0b3d91;color:#fff;padding:18px 20px;font-weight:800;font-size:22px}
+main{padding:20px;max-width:420px;margin:auto}
+.alert{background:#ffe9e9;color:#a40000;border-radius:10px;padding:12px 14px;font-weight:600}
+.timer{font-size:28px;font-weight:800;color:#a40000;text-align:center;margin:12px 0}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input{width:100%;box-sizing:border-box;padding:14px;border:1px solid #b9c3d6;border-radius:10px;font-size:16px}
+button{width:100%;margin-top:20px;padding:16px;border:0;border-radius:10px;background:#0b3d91;color:#fff;font-size:17px;font-weight:700}
+.badge{text-align:center;margin-top:16px;color:#4b5873;font-size:13px}
+.demo{margin-top:28px;font-size:11px;color:#8a93a6;text-align:center}
+</style></head><body>
+<header>🏦 Zenora Bank</header>
+<main>
+<p class="alert">Your account has been temporarily suspended due to unusual activity.</p>
+<p>To restore access, verify your details before the timer ends.</p>
+<div class="timer">09:58</div>
+<form onsubmit="return false">
+<label>Card number</label><input inputmode="numeric" placeholder="0000 0000 0000 0000">
+<label>Expiry / CVV</label><input placeholder="MM/YY  ·  CVV">
+<label>One-time code (OTP) sent to your phone</label><input inputmode="numeric" placeholder="6-digit code">
+<label>Internet banking password</label><input type="password" placeholder="Password">
+<button type="submit">Verify and unlock account</button>
+</form>
+<p class="badge">🔒 Secured by Norton · Verified by Visa</p>
+<p class="demo">TrueTick demo page · fictional bank · nothing you type is sent</p>
+</main></body></html>

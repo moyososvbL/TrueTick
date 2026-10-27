@@ -182,3 +182,10 @@ input[type="file"] {
 .live summary { cursor: pointer; font-weight: 700; }
 @keyframes pulse { 50% { transform: scale(1.02); } }
 @media (prefers-reduced-motion: reduce) { .live-alert { animation: none; } }
+
+.stage { display: inline-block; font-weight: 700; padding: 6px 12px; border-radius: 999px;
+  background: var(--medium-bg); color: var(--medium); margin: 0 0 8px; }
+#timeline { margin: 0; padding-left: 22px; }
+#timeline li { margin: 6px 0; }
+.visit-image { width: 100%; max-width: 320px; max-height: 560px; object-fit: cover; object-position: top;
+  border-radius: 18px; border: 6px solid #1b1f1d; display: block; margin: 8px 0; }

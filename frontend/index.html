@@ -28,8 +28,9 @@
       <label for="message">Paste the message here</label>
       <textarea id="message" name="message" rows="7" maxlength="8000"
         placeholder="Example: Your bank account has been blocked. Send the OTP we just sent you to unlock it."></textarea>
-      <label for="file" class="upload-label">Or upload a screenshot, photo of a QR code, voice note or file</label>
-      <input type="file" id="file" name="file"
+      <label for="file" class="upload-label">Or upload a screenshot, photo of a QR code, voice note or file.
+        Pick several screenshots of one chat (in order) and we'll read the whole conversation.</label>
+      <input type="file" id="file" name="file" multiple
         accept="image/*,audio/*,.opus,.ogg,.m4a,.mp3,.wav,.aac,.amr,.apk,.pdf,.doc,.docx">
       <p class="file-name" id="file-name" hidden></p>
       <div class="row">
@@ -43,6 +44,25 @@
       <div class="risk-badge" id="risk-badge"></div>
       <p class="scam-type" id="scam-type"></p>
       <p class="summary" id="summary"></p>
+
+      <div class="block" id="story-block" hidden>
+        <h2>The whole conversation</h2>
+        <p class="stage" id="stage" hidden></p>
+        <ol id="timeline"></ol>
+        <div id="contradictions-block" hidden>
+          <h2>Where their story doesn't add up</h2>
+          <ul id="contradictions"></ul>
+        </div>
+      </div>
+
+      <div class="block" id="visit-block" hidden>
+        <h2>We visited the website for you</h2>
+        <p class="muted">We opened the link in a sealed browser on our server, so you don't have to.</p>
+        <p id="visit-status" class="muted"></p>
+        <img id="visit-image" class="visit-image" alt="Screenshot of the website the link opens" hidden>
+        <p id="visit-summary" class="summary"></p>
+        <ul id="visit-findings"></ul>
+      </div>
 
       <div class="block" id="marked-block" hidden>
         <h2>What we spotted on the image</h2>

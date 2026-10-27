@@ -61,7 +61,17 @@ function render(v) {
   fillList($("advice"), v.advice || []);
   $("advice-block").hidden = !(v.advice || []).length;
 
+  const story = (v.timeline || []).length || v.stage;
+  $("story-block").hidden = !story;
+  $("stage").textContent = v.stage ? `Stage: ${v.stage}` : "";
+  $("stage").hidden = !v.stage;
+  fillList($("timeline"), v.timeline || []);
+  fillList($("contradictions"), v.contradictions || []);
+  $("contradictions-block").hidden = !(v.contradictions || []).length;
+
   const risky = ["high", "medium"].includes(v.risk);
+  $("visit-block").hidden = true;
+  if ((v.links || []).length && v.risk !== "low") visitSite(v.links[0]);
   $("report-btn").hidden = !risky;
   $("card-btn").hidden = !risky;
   $("report-panel").hidden = true;
@@ -74,7 +84,8 @@ function render(v) {
 async function check(event) {
   event.preventDefault();
   const text = $("message").value.trim();
-  const file = $("file").files[0];
+  const files = [...$("file").files];
+  const file = files[0];
   if (!text && !file) {
     $("message").focus();
     return;
@@ -85,8 +96,12 @@ async function check(event) {
   try {
     const form = new FormData();
     if (text) form.append("text", text);
-    if (file) form.append("file", file);
-    const res = await fetch("/api/check", { method: "POST", body: form });
+    const together = files.length > 1;
+    if (together) {
+      btn.textContent = `Reading ${files.length} screenshots…`;
+      files.forEach((f) => form.append("files", f));
+    } else if (file) form.append("file", file);
+    const res = await fetch(together ? "/api/check/conversation" : "/api/check", { method: "POST", body: form });
     if (!res.ok) {
       let detail = "";
       try { detail = (await res.json()).detail || ""; } catch (_) {}
@@ -137,9 +152,10 @@ async function share() {
 $("check-form").addEventListener("submit", check);
 $("share-btn").addEventListener("click", share);
 $("file").addEventListener("change", () => {
-  const f = $("file").files[0];
-  $("file-name").textContent = f ? `Selected: ${f.name}` : "";
-  $("file-name").hidden = !f;
+  const fs = [...$("file").files];
+  $("file-name").textContent = fs.length > 1 ? `Selected ${fs.length} screenshots (we'll read them as one conversation)` :
+    fs.length ? `Selected: ${fs[0].name}` : "";
+  $("file-name").hidden = !fs.length;
 });
 $("again-btn").addEventListener("click", () => {
   $("result").hidden = true;
@@ -374,3 +390,38 @@ function stopLive() {
 
 $("live-start").addEventListener("click", startLive);
 $("live-stop").addEventListener("click", stopLive);
+
+
+// ---------- "We visited the website for you" ----------
+let visitToken = 0;
+
+async function visitSite(url) {
+  const token = ++visitToken;
+  $("visit-block").hidden = false;
+  $("visit-status").textContent = "Opening the link safely… (takes about 10 seconds)";
+  $("visit-status").hidden = false;
+  $("visit-image").hidden = true;
+  $("visit-summary").textContent = "";
+  fillList($("visit-findings"), []);
+  try {
+    const res = await fetch("/api/visit", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }),
+    });
+    const s = await res.json();
+    if (token !== visitToken) return; // a newer check started
+    if (s.error) {
+      $("visit-status").textContent = s.error;
+      return;
+    }
+    $("visit-status").textContent = s.final_url && s.final_url !== url ? `The link took us to: ${s.final_url}` : "";
+    $("visit-status").hidden = !$("visit-status").textContent;
+    if (s.screenshot) {
+      $("visit-image").src = s.screenshot;
+      $("visit-image").hidden = false;
+    }
+    $("visit-summary").textContent = s.summary || "";
+    fillList($("visit-findings"), (s.findings || []).map((f) => f.message));
+  } catch (_) {
+    if (token === visitToken) $("visit-status").textContent = "We couldn't open the website right now.";
+  }
+}

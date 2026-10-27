@@ -18,6 +18,7 @@ class Settings(BaseSettings):
 
     max_upload_mb: int = 16
     link_inspection: bool = True  # safely look behind links (redirects, page content, website age)
+    site_visit: bool = True  # open suspicious links in a sealed headless browser and screenshot them
     public_url: str = ""  # e.g. truetick.example.com once deployed; shown on warning cards
     data_dir: str = "data"  # local SQLite for community reports (no message content stored)
 

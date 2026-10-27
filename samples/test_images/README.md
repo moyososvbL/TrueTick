@@ -48,3 +48,7 @@ Run any image through the app (http://127.0.0.1:8000) or the check scripts.
 `samples/test_cases.csv` has 59 messages (47 scams across 40+ categories, 12 normal messages,
 including real-brand links like paypal.com and amazon.com that must NOT be flagged).
 Score TrueTick with `python scripts/evaluate.py` (or `--offline` for the free link checks only).
+
+## Whole-conversation demo
+
+`conversation_romance_1.png` … `_4.png`: one fictional chat over 10 days (made by `scripts/make_conversation_images.py`). The story contradicts itself on purpose: surgeon in Houston → oil-rig engineer in the North Sea, age 45 → 52, daughter Emily → Jessica. Upload all four together.

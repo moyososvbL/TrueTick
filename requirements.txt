@@ -17,5 +17,9 @@ numpy
 # Voice notes (decodes .ogg/.opus/.m4a/.mp3, no ffmpeg install needed)
 av
 
+# 'We visited the website for you' (sealed headless browser).
+# After installing, run once:  python -m playwright install chromium
+playwright
+
 # Testing
 pytest
