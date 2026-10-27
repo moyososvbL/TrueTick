@@ -89,7 +89,6 @@ def _require_file(path: Path) -> Path:
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print('Usage: python scripts/check_sam.py path/to/image.jpg "what to find"')
-        sys.exit(1)
-    asyncio.run(main(_require_file(Path(sys.argv[1])), sys.argv[2] if len(sys.argv) > 2 else "text,number,logo,amount of money"))
+    default = ROOT / "samples" / "test_images" / "receipt_edited_fictional_bank.jpg"
+    image = Path(sys.argv[1]) if len(sys.argv) > 1 else default
+    asyncio.run(main(_require_file(image), sys.argv[2] if len(sys.argv) > 2 else "text,number,logo,amount of money"))

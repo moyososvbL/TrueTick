@@ -49,7 +49,8 @@ def _require_file(path: Path) -> Path:
 
 
 if __name__ == "__main__":
+    default = Path(__file__).resolve().parent.parent / "samples" / "test_images" / "receipt_edited_fictional_bank.jpg"
+    image = Path(sys.argv[1]) if len(sys.argv) > 1 else default
     if len(sys.argv) < 2:
-        print("Usage: python scripts/check_vision.py path/to/image.jpg")
-        sys.exit(1)
-    asyncio.run(main(_require_file(Path(sys.argv[1]))))
+        print(f"No image given, using the test receipt: {image.name}")
+    asyncio.run(main(_require_file(image)))
