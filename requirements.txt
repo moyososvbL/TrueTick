@@ -1,6 +1,6 @@
 # Web server
 fastapi
-uvicorn[standard]
+uvicorn
 python-multipart
 
 # Calling Meta's AI models
