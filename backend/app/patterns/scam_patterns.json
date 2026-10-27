@@ -288,6 +288,24 @@
         "Pay through the official app or website you look up yourself",
         "Report tampered QR codes to the business"
       ]
+    },
+    {
+      "id": "malicious_app_file",
+      "name": "Harmful app disguised as a document",
+      "category": "malware",
+      "description": "A file sent as an invitation, invoice, traffic fine, bank statement or photo that is actually an app (.apk) or program.",
+      "signals": [
+        "file named like an invitation, invoice, fine or statement",
+        "ends in .apk or has a double ending like .pdf.apk",
+        "asks you to allow 'install from unknown sources'",
+        "sent by an unknown number or a hacked friend's account"
+      ],
+      "what_next": "The app can read your SMS codes, steal banking logins and control your phone.",
+      "advice": [
+        "Never install apps sent in chats",
+        "Delete the file",
+        "If installed, disconnect from the internet and contact your bank"
+      ]
     }
   ],
   "universal_red_flags": [

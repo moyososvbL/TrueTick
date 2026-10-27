@@ -12,6 +12,7 @@ pydantic-settings
 # Images and QR codes
 pillow
 opencv-python
+numpy
 
 # Testing
 pytest
