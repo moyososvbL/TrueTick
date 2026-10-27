@@ -10,6 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from backend.app.analyzers.audio import BadAudioError, analyze_audio
 from backend.app.analyzers.files import analyze_file, check_file
@@ -18,6 +19,7 @@ from backend.app.analyzers.text import analyze_text
 from backend.app.config import get_settings
 from backend.app.intel import reports
 from backend.app.models import CheckTextRequest, Verdict
+from backend.app.reporting import helper as report_helper
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
@@ -57,6 +59,26 @@ async def check_anything(
     """One endpoint for everything: text, screenshots/photos, voice notes and files."""
     verdict = await _route(text, file)
     return reports.annotate(verdict, text)
+
+
+class ReportRequest(BaseModel):
+    verdict: Verdict
+    country: str = Field(default="", max_length=2)
+    what_happened: str = Field(default="", max_length=4000)
+
+
+@app.get("/api/report/countries")
+async def report_countries():
+    return report_helper.countries()
+
+
+@app.post("/api/report")
+async def report(req: ReportRequest):
+    """Official reporting links for the user's country, plus a summary they can paste into a report."""
+    return {
+        "options": report_helper.report_options(req.country, intimate_images=req.verdict.is_threat),
+        "summary": report_helper.report_summary(req.verdict, req.what_happened),
+    }
 
 
 @app.get("/api/stats")

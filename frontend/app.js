@@ -55,6 +55,9 @@ function render(v) {
   fillList($("advice"), v.advice || []);
   $("advice-block").hidden = !(v.advice || []).length;
 
+  $("report-btn").hidden = !["high", "medium"].includes(v.risk);
+  $("report-panel").hidden = true;
+
   result.hidden = false;
   result.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -140,3 +143,71 @@ $("example-btn").addEventListener("click", () => {
   $("message").value = EXAMPLES[exampleIndex % EXAMPLES.length];
   exampleIndex += 1;
 });
+
+// ---------- Report this scam ----------
+const TZ_COUNTRY = { "Africa/Lagos": "NG", "Europe/London": "GB", "Europe/Belfast": "GB" };
+
+function guessCountry() {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    if (TZ_COUNTRY[tz]) return TZ_COUNTRY[tz];
+    if (tz.startsWith("America/") && navigator.language === "en-US") return "US";
+  } catch (_) {}
+  return "";
+}
+
+async function loadCountries() {
+  try {
+    const list = await (await fetch("/api/report/countries")).json();
+    const sel = $("country");
+    for (const c of [...list].reverse()) {
+      const o = document.createElement("option");
+      o.value = c.code;
+      o.textContent = c.name;
+      sel.insertBefore(o, sel.firstChild);
+    }
+    sel.value = guessCountry();
+  } catch (_) {}
+}
+
+let lastReport = null;
+
+async function loadReport() {
+  if (!lastVerdict) return;
+  const res = await fetch("/api/report", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ verdict: lastVerdict, country: $("country").value }),
+  });
+  lastReport = await res.json();
+  const o = lastReport.options;
+  fillList($("always-list"), o.always || []);
+  $("report-links").replaceChildren(...(o.links || []).map((l) => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = l.url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = l.name;
+    li.append(a);
+    return li;
+  }));
+  $("report-note").textContent = o.note || "";
+  $("report-note").hidden = !o.note;
+}
+
+$("report-btn").addEventListener("click", async () => {
+  $("report-panel").hidden = false;
+  await loadReport();
+  $("report-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+$("country").addEventListener("change", loadReport);
+$("copy-report-btn").addEventListener("click", async () => {
+  if (!lastReport) return;
+  try {
+    await navigator.clipboard.writeText(lastReport.summary);
+    $("copy-report-btn").textContent = "Copied! Paste it into your report";
+    setTimeout(() => ($("copy-report-btn").textContent = "Copy a report summary"), 2500);
+  } catch (_) {}
+});
+loadCountries();

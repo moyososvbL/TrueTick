@@ -1,0 +1,42 @@
+{
+  "_about": "Official places to report scams, by country. Each link was checked on an official government or charity website (Oct 2026). Update this file as services change.",
+  "countries": {
+    "NG": {
+      "name": "Nigeria",
+      "links": [
+        {"name": "Nigeria Police National Cybercrime Centre (NPF-NCCC) e-reporting portal", "url": "https://nccc.npf.gov.ng/"},
+        {"name": "EFCC (Economic and Financial Crimes Commission), incl. the Eagle Eye reporting app", "url": "https://www.efcc.gov.ng/"}
+      ]
+    },
+    "US": {
+      "name": "United States",
+      "links": [
+        {"name": "FTC: ReportFraud.ftc.gov", "url": "https://reportfraud.ftc.gov/"},
+        {"name": "FBI Internet Crime Complaint Center (IC3)", "url": "https://www.ic3.gov/"}
+      ]
+    },
+    "GB": {
+      "name": "United Kingdom (England, Wales, Northern Ireland)",
+      "links": [
+        {"name": "Report Fraud (replaced Action Fraud) · 0300 123 2040", "url": "https://www.reportfraud.police.uk/"}
+      ],
+      "note": "In Scotland, call Police Scotland on 101."
+    }
+  },
+  "default": {
+    "name": "Anywhere",
+    "links": [
+      {"name": "FBI IC3 accepts complaints from people in any country", "url": "https://www.ic3.gov/"}
+    ],
+    "note": "Also report to your local police and to the app or platform where the scammer contacted you."
+  },
+  "intimate_images": [
+    {"name": "StopNCII.org: helps stop intimate images of adults spreading on major platforms", "url": "https://stopncii.org/"},
+    {"name": "Take It Down (NCMEC): for images taken when you were under 18", "url": "https://takeitdown.ncmec.org/"}
+  ],
+  "always": [
+    "If you sent money or shared card or bank details, contact your bank or payment app immediately and ask them to stop or recall the payment.",
+    "Report the scammer's account in the app where they contacted you.",
+    "Keep screenshots and don't delete the chat: they are evidence."
+  ]
+}

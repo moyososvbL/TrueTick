@@ -67,7 +67,19 @@
 
       <div class="row actions">
         <button type="button" id="share-btn" class="primary">Share with family</button>
+        <button type="button" id="report-btn" class="ghost" hidden>Report this scam</button>
         <button type="button" id="again-btn" class="ghost">Check another</button>
+      </div>
+
+      <div class="report" id="report-panel" hidden>
+        <h2>Report this scam</h2>
+        <label for="country">Where are you?</label>
+        <select id="country"><option value="">Another country</option></select>
+        <ul id="always-list"></ul>
+        <ul id="report-links" class="report-links"></ul>
+        <p class="report-note" id="report-note"></p>
+        <button type="button" id="copy-report-btn" class="primary">Copy a report summary</button>
+        <p class="report-note">Paste it into the official report form, your bank's fraud team, or the app where the scammer contacted you.</p>
       </div>
       <p class="disclaimer">TrueTick can make mistakes. When money is involved, always double-check through an official contact.</p>
     </section>

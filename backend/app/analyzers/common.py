@@ -9,6 +9,7 @@ THREAT_ADVICE = [
     "Don't pay. Paying usually leads to bigger demands.",
     "Stop replying, but keep screenshots: they are evidence.",
     "Report the account and tell someone you trust. This is not your fault.",
+    "If intimate images are involved: StopNCII.org helps stop them spreading; if you were under 18 when they were taken, use Take It Down (takeitdown.ncmec.org).",
 ]
 
 
