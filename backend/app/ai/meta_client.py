@@ -1,7 +1,13 @@
 """The only place in TrueTick that talks to the Meta Model API.
 
-The API is OpenAI-compatible: POST {base_url}/chat/completions with a Bearer key.
+Two styles of call:
+- chat():        POST {base}/chat/completions   (OpenAI-compatible, text in → text out)
+- upload_file(): POST {base}/files              (images/audio → file_id)
+  respond():     POST {base}/responses          (file_id + prompt → streamed events; used by SAM 3.1
+                                                  and for Muse Spark reading images)
 """
+
+import json
 
 import httpx
 
@@ -13,12 +19,26 @@ class MetaAPIError(Exception):
 
 
 _HINTS = {
+    400: "The request was rejected. The model may not accept this kind of input.",
     401: "The API key was rejected. Check META_API_KEY in your .env file.",
     402: "Payment required. Check that your hackathon credit is active on dev.meta.ai.",
     403: "Access denied. Your Meta Model API account may be restricted. Check the banner on dev.meta.ai.",
     404: "Not found. Check META_API_BASE_URL and the model name in .env.",
+    413: "The file is too large for the Meta Model API.",
     429: "Too many requests or out of credit. Wait a moment, then check Usage on dev.meta.ai.",
 }
+
+
+def _base_and_headers() -> tuple[str, dict]:
+    s = get_settings()
+    if not s.meta_api_key:
+        raise MetaAPIError("META_API_KEY is empty. Add your key to the .env file.")
+    return s.meta_api_base_url.rstrip("/"), {"Authorization": f"Bearer {s.meta_api_key}"}
+
+
+def _fail(status: int, body: str) -> MetaAPIError:
+    hint = _HINTS.get(status, "Unexpected error from the Meta Model API.")
+    return MetaAPIError(f"{hint} (HTTP {status}: {body[:300]})")
 
 
 async def chat(
@@ -28,25 +48,92 @@ async def chat(
     transport: httpx.AsyncBaseTransport | None = None,
 ) -> str:
     """Send a conversation to Muse Spark and return the reply text."""
-    s = get_settings()
-    if not s.meta_api_key:
-        raise MetaAPIError("META_API_KEY is empty. Add your key to the .env file.")
-
-    url = f"{s.meta_api_base_url.rstrip('/')}/chat/completions"
-    payload = {"model": model or s.text_model, "messages": messages, "temperature": temperature}
-    headers = {"Authorization": f"Bearer {s.meta_api_key}"}
-
+    base, headers = _base_and_headers()
+    payload = {"model": model or get_settings().text_model, "messages": messages, "temperature": temperature}
     async with httpx.AsyncClient(timeout=60, transport=transport) as client:
         try:
-            r = await client.post(url, json=payload, headers=headers)
+            r = await client.post(f"{base}/chat/completions", json=payload, headers=headers)
         except httpx.HTTPError as e:
             raise MetaAPIError(f"Couldn't reach the Meta Model API ({e.__class__.__name__}). Check your internet.") from e
-
     if r.status_code >= 400:
-        hint = _HINTS.get(r.status_code, "Unexpected error from the Meta Model API.")
-        raise MetaAPIError(f"{hint} (HTTP {r.status_code}: {r.text[:300]})")
-
+        raise _fail(r.status_code, r.text)
     try:
         return r.json()["choices"][0]["message"]["content"]
     except (KeyError, IndexError, ValueError) as e:
         raise MetaAPIError(f"Unexpected reply format: {r.text[:300]}") from e
+
+
+async def upload_file(
+    data: bytes, filename: str, mime: str, transport: httpx.AsyncBaseTransport | None = None
+) -> str:
+    """Upload an image or audio file and return its file_id."""
+    base, headers = _base_and_headers()
+    async with httpx.AsyncClient(timeout=120, transport=transport) as client:
+        try:
+            r = await client.post(
+                f"{base}/files", headers=headers,
+                data={"purpose": "user_data"}, files={"file": (filename, data, mime)},
+            )
+        except httpx.HTTPError as e:
+            raise MetaAPIError(f"Couldn't upload the file to Meta ({e.__class__.__name__}).") from e
+    if r.status_code >= 400:
+        raise _fail(r.status_code, r.text)
+    file_id = r.json().get("id")
+    if not isinstance(file_id, str) or not file_id:
+        raise MetaAPIError("File upload finished without a file id.")
+    return file_id
+
+
+async def respond(
+    model: str,
+    content: list[dict],
+    metadata: dict | None = None,
+    transport: httpx.AsyncBaseTransport | None = None,
+) -> list[dict]:
+    """Call the Responses API with streaming and return every event as a dict.
+
+    content example: [{"type": "input_text", "text": "..."}, {"type": "input_image", "file_id": "..."}]
+    """
+    base, headers = _base_and_headers()
+    headers = {**headers, "Accept": "text/event-stream"}
+    payload: dict = {
+        "model": model,
+        "input": [{"type": "message", "role": "user", "content": content}],
+        "stream": True,
+    }
+    if metadata:
+        payload["metadata"] = metadata
+
+    events: list[dict] = []
+    async with httpx.AsyncClient(timeout=180, transport=transport) as client:
+        try:
+            async with client.stream("POST", f"{base}/responses", json=payload, headers=headers) as r:
+                if r.status_code >= 400:
+                    raise _fail(r.status_code, (await r.aread()).decode(errors="replace"))
+                async for line in r.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    data = line[6:].strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        events.append(json.loads(data))
+                    except json.JSONDecodeError:
+                        events.append({"type": "raw", "data": data})
+        except httpx.HTTPError as e:
+            raise MetaAPIError(f"Couldn't reach the Meta Model API ({e.__class__.__name__}).") from e
+    return events
+
+
+def output_text(events: list[dict]) -> str:
+    """Assemble the text answer from Responses API events."""
+    deltas = [e.get("delta", "") for e in events if str(e.get("type", "")).endswith("output_text.delta")]
+    if deltas:
+        return "".join(d for d in deltas if isinstance(d, str))
+    for e in reversed(events):
+        response = e.get("response") if isinstance(e.get("response"), dict) else None
+        for item in (response or {}).get("output", []) or []:
+            for part in item.get("content", []) or []:
+                if part.get("type") in ("output_text", "text") and part.get("text"):
+                    return part["text"]
+    return ""

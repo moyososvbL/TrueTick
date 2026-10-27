@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 import httpx
 import pytest
@@ -47,3 +48,54 @@ def test_missing_key(monkeypatch):
     get_settings.cache_clear()
     with pytest.raises(meta_client.MetaAPIError, match="META_API_KEY is empty"):
         _run(lambda r: httpx.Response(200))
+
+
+def test_upload_file_returns_id():
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["url"] = str(request.url)
+        seen["body"] = request.read()
+        return httpx.Response(200, json={"id": "file-123"})
+
+    fid = asyncio.run(meta_client.upload_file(b"img", "a.jpg", "image/jpeg", transport=httpx.MockTransport(handler)))
+    assert fid == "file-123"
+    assert seen["url"].endswith("/v1/files")
+    assert b"user_data" in seen["body"] and b"a.jpg" in seen["body"]
+
+
+def test_respond_parses_stream_and_text():
+    sse = (
+        'data: {"type": "response.created"}\n\n'
+        'data: {"type": "response.output_text.delta", "delta": "Hello "}\n\n'
+        'data: {"type": "response.output_text.delta", "delta": "world"}\n\n'
+        "data: [DONE]\n\n"
+    )
+    seen = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen["body"] = request.read().decode()
+        return httpx.Response(200, text=sse, headers={"content-type": "text/event-stream"})
+
+    events = asyncio.run(meta_client.respond(
+        "sam-3.1", [{"type": "input_text", "text": "hi"}], metadata={"mask_encoding": "lossless"},
+        transport=httpx.MockTransport(handler),
+    ))
+    assert len(events) == 3
+    assert meta_client.output_text(events) == "Hello world"
+    body = json.loads(seen["body"])
+    assert body["stream"] is True and body["metadata"] == {"mask_encoding": "lossless"}
+
+
+def test_output_text_from_completed_event():
+    events = [{"type": "response.completed",
+               "response": {"output": [{"content": [{"type": "output_text", "text": "Done"}]}]}}]
+    assert meta_client.output_text(events) == "Done"
+
+
+def test_respond_error_is_readable():
+    def handler(request):
+        return httpx.Response(403, text="restricted")
+
+    with pytest.raises(meta_client.MetaAPIError, match="restricted"):
+        asyncio.run(meta_client.respond("sam-3.1", [], transport=httpx.MockTransport(handler)))
