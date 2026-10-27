@@ -15,7 +15,8 @@ from backend.app.ai import meta_client, prompts
 from backend.app.analyzers.common import apply_findings, parse_model_json, verdict_from_model
 from backend.app.analyzers.qr import decode_qr_codes
 from backend.app.analyzers.text import analyze_text
-from backend.app.checks.links import run_checks
+from backend.app.checks.link_inspect import inspect_links
+from backend.app.checks.links import extract_urls, run_checks
 from backend.app.config import get_settings
 from backend.app.models import Finding, Verdict
 
@@ -66,6 +67,9 @@ async def _read_with_vision(data: bytes, mime: str, caption: str) -> Verdict:
     verdict.extracted_text = str(model_data.get("extracted_text") or "")[:8000]
 
     findings = run_checks(verdict.extracted_text) if verdict.extracted_text else []
+    if verdict.extracted_text:
+        seen = {f.message for f in findings}
+        findings += [f for f in await inspect_links(extract_urls(verdict.extracted_text)) if f.message not in seen]
     verdict = apply_findings(verdict, findings)
     if str(model_data.get("image_kind", "")).lower() == "receipt" and RECEIPT_ADVICE not in verdict.advice:
         verdict.advice = [RECEIPT_ADVICE] + verdict.advice[:2]

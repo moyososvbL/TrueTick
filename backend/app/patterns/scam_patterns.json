@@ -384,6 +384,27 @@
         "Check whether the platform is registered with your country's financial regulator",
         "Never invest through an app someone in a chat group recommends"
       ]
+    },
+    {
+      "id": "fake_social_profile",
+      "name": "Fake social media account or page",
+      "category": "impersonation",
+      "description": "A fake Instagram, Facebook, TikTok or X account pretending to be a brand, bank, celebrity, customer care, investment expert or attractive single person. Often uses stolen photos and fake 'verified' badges.",
+      "signals": [
+        "account is new or has very few posts but many followers",
+        "name or handle slightly misspelled (extra dots, underscores, numbers)",
+        "celebrity or brand 'giveaway' that needs a fee or your details",
+        "'customer care' that contacts you first after you complain publicly",
+        "asks you to move to WhatsApp or Telegram",
+        "profile photos look like a model or stock photos",
+        "investment or forex 'account manager' showing profit screenshots"
+      ],
+      "what_next": "After you engage, they ask for a fee, your login details or money to 'invest', or they move on to a romance or recovery scam.",
+      "advice": [
+        "Check the account's age, posts and exact handle before trusting it",
+        "Real brands never ask for fees or passwords in DMs",
+        "Report the account in the app (Report → Scam or fraud) so it can be removed"
+      ]
     }
   ],
   "universal_red_flags": [

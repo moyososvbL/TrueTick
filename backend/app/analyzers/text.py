@@ -4,7 +4,8 @@ import logging
 
 from backend.app.ai import meta_client, prompts
 from backend.app.analyzers.common import apply_findings, fallback_verdict, parse_model_json, verdict_from_model
-from backend.app.checks.links import run_checks
+from backend.app.checks.link_inspect import inspect_links
+from backend.app.checks.links import extract_urls, run_checks
 from backend.app.models import Verdict
 
 log = logging.getLogger("truetick.text")
@@ -12,6 +13,8 @@ log = logging.getLogger("truetick.text")
 
 async def analyze_text(text: str) -> Verdict:
     findings = run_checks(text)
+    seen = {f.message for f in findings}
+    findings += [f for f in await inspect_links(extract_urls(text)) if f.message not in seen]
     messages = [
         {"role": "system", "content": prompts.text_system_prompt()},
         {"role": "user", "content": prompts.text_user_prompt(text, [f.message for f in findings])},

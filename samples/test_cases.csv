@@ -65,3 +65,5 @@ id,expected,category,text
 64,scam,crypto_atm,"Your bank account is being used for money laundering. To protect your savings, withdraw the cash and deposit it into the Bitcoin ATM at the shopping mall using the QR code I'll send you"
 65,scam,gold_courier,"For your protection, convert your savings into gold bars. A federal courier will come to your house tomorrow to collect them for safekeeping. Don't tell the bank why you are withdrawing"
 66,scam,investment_club,Join our VIP investment club on WhatsApp! Our professor's AI trading signals made members 300% this month. Elon Musk recommends it - watch the video. Limited seats
+67,scam,fake_social_profile,Hi! This is the official Zenora Bank customer care page on Instagram (@zenorabank.support_ng). We saw your complaint. Send your account number and the OTP we just sent to resolve it
+68,scam,fake_social_profile,Congrats! You've been picked in our celebrity giveaway for an iPhone 17. Pay $25 shipping fee and send your address to claim. Offer ends tonight
