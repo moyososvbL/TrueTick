@@ -1,7 +1,7 @@
 """Shows what SAM 3.1 returns, so TrueTick can use it for receipts.
 
 Run from the project root (virtual environment active):
-    python scripts/check_sam.py path/to/receipt.jpg "amount"
+    python scripts/check_sam.py path/to/receipt.jpg "text,number,logo"
 
 The full raw output is saved to samples/private/sam_output.json (never committed).
 Paste the summary this script prints (not the file) when asked.
@@ -31,36 +31,52 @@ def shorten(value, limit=120):
     return value
 
 
-async def main(path: Path, prompt: str) -> None:
+async def main(path: Path, prompts_arg: str) -> None:
     mime = mimetypes.guess_type(path.name)[0] or "image/jpeg"
     model = get_settings().segment_model
+    prompts = [p.strip() for p in prompts_arg.split(",") if p.strip()]
     try:
         print(f"Uploading {path.name} ...")
         file_id = await upload_file(path.read_bytes(), path.name, mime)
-        print(f"Asking {model} to find: {prompt!r} ...")
-        events = await respond(
-            model,
-            [{"type": "input_text", "text": prompt}, {"type": "input_image", "file_id": file_id}],
-            metadata={"mask_encoding": "lossless"},
-        )
     except MetaAPIError as e:
         print(f"\n❌ {e}")
         sys.exit(1)
 
-    out = ROOT / "samples" / "private" / "sam_output.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps(events, indent=2), encoding="utf-8")
-
-    print(f"\n✅ Received {len(events)} events. Full output saved to {out}")
-    print("Event types:", sorted({str(e.get('type')) for e in events}))
-    print("\nShortened view of each distinct event type:")
-    shown = set()
-    for e in events:
-        t = str(e.get("type"))
-        if t not in shown:
-            shown.add(t)
-            print(f"\n--- {t} ---")
-            print(json.dumps(shorten(e), indent=2)[:1500])
+    out_dir = ROOT / "samples" / "private"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    for prompt in prompts:
+        try:
+            events = await respond(
+                model,
+                [{"type": "input_text", "text": prompt}, {"type": "input_image", "file_id": file_id}],
+                metadata={"mask_encoding": "lossless"},
+            )
+        except MetaAPIError as e:
+            print(f"\n❌ {prompt!r}: {e}")
+            continue
+        out = out_dir / f"sam_output_{prompt.replace(' ', '_')}.json"
+        out.write_text(json.dumps(events, indent=2), encoding="utf-8")
+        final = next((e for e in reversed(events) if e.get("type") == "response.completed"), {})
+        output = (final.get("response") or {}).get("output") or []
+        texts = [c.get("text", "") for item in output for c in (item.get("content") or [])]
+        extra_keys = sorted({k for item in output for k in item.keys()} - {"content", "id", "role", "status", "type"})
+        annotations = [a for item in output for c in (item.get("content") or []) for a in (c.get("annotations") or [])]
+        size = len(json.dumps(events))
+        print(f"\n=== {prompt!r}: {len(events)} events, {size:,} bytes ===")
+        print("  text:", shorten(" | ".join(t for t in texts if t)) or "(empty)")
+        print("  annotations:", len(annotations), shorten(annotations[:2]) if annotations else "")
+        if extra_keys:
+            print("  other output fields:", extra_keys)
+        other_types = sorted({str(e.get("type")) for e in events} - {
+            "response.created", "response.in_progress", "response.output_item.added", "response.content_part.added",
+            "response.output_text.done", "response.content_part.done", "response.output_item.done", "response.completed"})
+        if other_types:
+            print("  extra event types:", other_types)
+            for e in events:
+                if e.get("type") in other_types:
+                    print("  example:", json.dumps(shorten(e))[:800])
+                    break
+        print(f"  saved to {out}")
 
 
 def _require_file(path: Path) -> Path:
@@ -76,4 +92,4 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print('Usage: python scripts/check_sam.py path/to/image.jpg "what to find"')
         sys.exit(1)
-    asyncio.run(main(_require_file(Path(sys.argv[1])), sys.argv[2] if len(sys.argv) > 2 else "text"))
+    asyncio.run(main(_require_file(Path(sys.argv[1])), sys.argv[2] if len(sys.argv) > 2 else "text,number,logo,amount of money"))
