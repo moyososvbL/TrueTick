@@ -1,0 +1,17 @@
+# Web server
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Calling Meta's AI models
+httpx
+
+# Settings from .env
+pydantic-settings
+
+# Images and QR codes
+pillow
+opencv-python
+
+# Testing
+pytest
