@@ -351,11 +351,13 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
   .m-trend.m-only { display: flex; }
   .checker { margin-top: 0; }
   .box textarea { min-height: 56px; }
-  .attach { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
-  .attach::-webkit-scrollbar { display: none; }
+  .attach { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .attach .pill { justify-content: center; height: 40px; padding: 0 10px; }
   .check-row .privacy { display: none; }
   .check-row .btn { width: 100%; }
-  .examples { margin-top: 12px; }
+  .examples { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .examples > span { grid-column: 1 / -1; }
+  .examples button { padding: 0 6px; }
   .page { padding-bottom: 120px; }
   .home { padding-bottom: 120px; }
   .page-head h1 { font-size: 26px; line-height: 30px; }
