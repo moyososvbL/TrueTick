@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     max_upload_mb: int = 16
     link_inspection: bool = True  # safely look behind links (redirects, page content, website age)
     site_visit: bool = True  # open suspicious links in a sealed headless browser and screenshot them
+    # Testing only: lets the sealed browser open TrueTick's own demo page on your laptop
+    # (http://127.0.0.1:8000/demo/zenora-login.html). Never turn on for a public server.
+    visit_allow_localhost: bool = False
     public_url: str = ""  # e.g. truetick.example.com once deployed; shown on warning cards
     data_dir: str = "data"  # local SQLite for community reports (no message content stored)
 

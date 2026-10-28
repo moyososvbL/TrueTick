@@ -63,3 +63,12 @@ def test_visit_endpoint(monkeypatch):
     assert body["screenshot"].startswith("data:image/jpeg")
     assert body["looks_like"] == "Zenora Bank" and body["risk"] == "low"  # brand word is in the address
     assert any("countdown" in f["message"] for f in body["findings"])
+
+
+def test_localhost_only_opens_with_testing_switch(monkeypatch):
+    from backend.app.config import get_settings
+    cache = {}
+    assert asyncio.run(site_visit._host_ok("127.0.0.1", cache)) is False
+    monkeypatch.setattr(get_settings(), "visit_allow_localhost", True)
+    assert asyncio.run(site_visit._host_ok("127.0.0.1", {})) is True
+    assert asyncio.run(site_visit._host_ok("192.168.1.1", {})) is False  # the switch never opens the home network

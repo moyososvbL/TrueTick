@@ -37,7 +37,12 @@ class VisitUnavailable(Exception):
     pass
 
 
+LOCAL_TEST_HOSTS = {"localhost", "127.0.0.1"}
+
+
 async def _host_ok(host: str, cache: dict[str, bool]) -> bool:
+    if host in LOCAL_TEST_HOSTS and get_settings().visit_allow_localhost:
+        return True
     if host not in cache:
         try:
             await _assert_public_host(host)
