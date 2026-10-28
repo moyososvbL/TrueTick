@@ -36,7 +36,11 @@ from backend.app.checks.link_inspect import inspect_url  # noqa: E402
 from backend.app.checks.links import check_url  # noqa: E402
 from backend.app.checks.site_visit import visit  # noqa: E402
 
-OPENPHISH_FEED = "https://openphish.com/feed.txt"
+OPENPHISH_FEEDS = [
+    "https://raw.githubusercontent.com/openphish/public_feed/refs/heads/main/feed.txt",  # same free feed, on GitHub
+    "https://openphish.com/feed.txt",
+]
+BROWSER_UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) TrueTick-evaluation"}
 SAFE_SITES = [
     "https://www.google.com", "https://www.paypal.com/signin", "https://www.bbc.com", "https://www.wikipedia.org",
     "https://login.microsoftonline.com", "https://www.amazon.com", "https://www.apple.com", "https://www.netflix.com/login",
@@ -48,12 +52,19 @@ RISKY = {"high", "medium"}
 
 
 async def fetch_phishing(count: int) -> list[str]:
-    try:
-        async with httpx.AsyncClient(timeout=20) as client:
-            r = await client.get(OPENPHISH_FEED)
-            r.raise_for_status()
-    except httpx.HTTPError as e:
-        print(f"❌ Couldn't download the OpenPhish feed ({e.__class__.__name__}). Use --file instead.")
+    r, problems = None, []
+    async with httpx.AsyncClient(timeout=20, headers=BROWSER_UA, follow_redirects=True) as client:
+        for feed in OPENPHISH_FEEDS:
+            try:
+                r = await client.get(feed)
+                r.raise_for_status()
+                break
+            except httpx.HTTPError as e:
+                code = getattr(getattr(e, "response", None), "status_code", "")
+                problems.append(f"{feed} → {e.__class__.__name__} {code}")
+                r = None
+    if r is None:
+        print("❌ Couldn't download the phishing feed:\n  " + "\n  ".join(problems) + "\nUse --file instead.")
         sys.exit(1)
     links, seen_hosts = [], set()
     for line in r.text.splitlines():
