@@ -32,6 +32,9 @@ def test_rules_catch_common_call_scams():
     assert "intimate_request" in ids("just send me nude pics")
     assert "sextortion" in ids("pay or everyone will see this video")
     assert "sextortion" in ids("I will send it to your family tonight")
+    assert "sextortion" in ids("I will post your video online")
+    assert ids("I will send the photos to your email") == []
+    assert ids("send me the pictures from the wedding") == []
 
 
 def test_rules_quiet_on_normal_call_and_stop_first():

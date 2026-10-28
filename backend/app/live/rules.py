@@ -47,7 +47,7 @@ RULES: list[tuple[re.Pattern, LiveAlert]] = [
                 r"take off your (clothes|shirt|top|bra|dress)|show me your (body|breasts?|chest)|get naked|undress)\b", re.I),
      LiveAlert("intimate_request", "stop", "They're asking you to undress or send intimate photos",
                "Don't send or show anything. The person may not be who they appear to be. Hang up.")),
-    (re.compile(r"\b((i('ll| will)|we('ll| will)) (post|leak|share|send|upload) (your|the|this) (video|pictures?|photos?|nudes?)|"
+    (re.compile(r"\b((i('ll| will)|we('ll| will)) (post|leak|expose|upload) (your|this) (video|pictures?|photos?|nudes?)|(share|send) (your|this) (nudes?|naked|private) ?(video|pictures?|photos?)?|"
                 r"everyone will see|send (it|this|them) to your (family|friends|followers|school|boss)|pay (me )?or (i|we|everyone))\b", re.I),
      LiveAlert("sextortion", "stop", "They're threatening to share private images",
                "Don't pay and stop replying. Keep the evidence and get help: stopncii.org (adults) or takeitdown.ncmec.org (under 18).")),
