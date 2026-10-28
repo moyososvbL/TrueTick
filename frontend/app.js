@@ -1,177 +1,282 @@
-const $ = (id) => document.getElementById(id);
+"use strict";
 
-const LABELS = {
-  high: "🚨 High risk",
-  medium: "⚠️ Be careful",
-  low: "✅ Low risk",
-  unknown: "🤔 Couldn't fully check",
+const $ = (id) => document.getElementById(id);
+const ICON = (name) => `<svg class="icon" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+
+const RISK = {
+  high: { label: "High risk", title: "Likely a scam", icon: "shield-alert" },
+  medium: { label: "Be careful", title: "Some warning signs", icon: "alert" },
+  low: { label: "Low risk", title: "No scam signs found", icon: "check" },
+  unknown: { label: "Couldn't fully check", title: "We couldn't be sure", icon: "question" },
 };
 
 const EXAMPLES = [
-  "Dear customer, your account has been suspended due to unusual activity. Verify your identity within 24 hours at http://rnicrosoft-secure-login.top/verify or it will be closed.",
+  "Zenora Bank: your account has been suspended due to unusual activity. Verify your identity within 24 hours at http://rnicrosoft-secure-login.top/verify or it will be closed.",
   "Hi sweetie, I can't video call because we're offshore on the rig for security reasons. My daughter is in hospital and the doctor needs a $3,000 deposit. Please, you're the only one I trust.",
   "Congratulations! You've been selected for a remote job: earn $500 a day liking videos. Pay a $30 registration fee to start today.",
 ];
-let exampleIndex = 0;
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (_) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} },
+};
+
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function list(el, items, icon = "chev") {
+  el.innerHTML = items.map((t) => `<li>${ICON(icon)}<span>${esc(t)}</span></li>`).join("");
+}
+
+/* ---------------- theme ---------------- */
+function setTheme(dark) {
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+  $("theme").setAttribute("aria-pressed", String(dark));
+  document.querySelector('meta[name="theme-color"]').content = dark ? "#070a14" : "#f6f8fc";
+  store.set("tt-theme", dark ? "dark" : "light");
+}
+$("theme").addEventListener("click", () => setTheme(document.documentElement.dataset.theme !== "dark"));
+setTheme(document.documentElement.dataset.theme === "dark");
+
+/* ---------------- routing ---------------- */
 let lastVerdict = null;
 
-function fillList(el, items) {
-  el.replaceChildren(...items.map((text) => {
-    const li = document.createElement("li");
-    li.textContent = text;
-    return li;
-  }));
+function route() {
+  let name = (location.hash.replace(/^#\/?/, "").split("?")[0] || "home");
+  if (name === "result" && !lastVerdict) name = "home";
+  if (!document.querySelector(`[data-view="${name}"]`)) name = "home";
+  document.querySelectorAll("[data-view]").forEach((v) => (v.hidden = v.dataset.view !== name));
+  document.querySelectorAll("[data-route]").forEach((a) => {
+    const on = a.dataset.route === name || (name === "result" && a.dataset.route === "home");
+    if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+  });
+  if (name !== "live" && live.running) stopLive();
+  if (name === "report") loadStandaloneReport();
+  window.scrollTo({ top: 0 });
+}
+window.addEventListener("hashchange", route);
+
+/* ---------------- checker ---------------- */
+let picked = [];   // File objects
+const MAX_SHOTS = 8;
+
+function renderFiles() {
+  const box = $("files");
+  box.hidden = picked.length === 0;
+  box.innerHTML = picked.map((f, i) =>
+    `<span class="file-chip">${ICON(f.type.startsWith("audio") ? "mic" : f.type.startsWith("image") ? "image" : "file")}<span>${esc(f.name)}</span>` +
+    `<button type="button" data-remove="${i}" aria-label="Remove ${esc(f.name)}">${ICON("x")}</button></span>`).join("");
+  const n = picked.length;
+  $("check-btn").querySelector(".label").textContent =
+    n > 1 ? `Check ${n} screenshots` : "Check it";
 }
 
-function render(v) {
+$("files").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-remove]");
+  if (!b) return;
+  picked.splice(Number(b.dataset.remove), 1);
+  renderFiles();
+});
+
+function openPicker(kind) {
+  if (location.hash && location.hash !== "#/") location.hash = "#/";
+  $(`pick-${kind}`).click();
+}
+document.addEventListener("click", (e) => {
+  const p = e.target.closest("[data-pick]");
+  if (p) { e.preventDefault(); openPicker(p.dataset.pick); }
+  const f = e.target.closest("[data-focus]");
+  if (f) { e.preventDefault(); $("message").focus(); }
+});
+
+["image", "audio", "qr", "file"].forEach((kind) => {
+  $(`pick-${kind}`).addEventListener("change", (e) => {
+    const chosen = [...e.target.files];
+    e.target.value = "";
+    if (!chosen.length) return;
+    const allImages = (arr) => arr.every((f) => f.type.startsWith("image/"));
+    // Several screenshots stay together (read as one conversation); anything else replaces the selection.
+    if (kind === "image" && allImages(picked)) picked = [...picked, ...chosen].slice(0, MAX_SHOTS);
+    else picked = chosen.slice(0, kind === "image" ? MAX_SHOTS : 1);
+    renderFiles();
+    hideError();
+  });
+});
+
+document.querySelectorAll("[data-example]").forEach((b) =>
+  b.addEventListener("click", () => {
+    $("message").value = EXAMPLES[Number(b.dataset.example)];
+    picked = []; renderFiles(); hideError(); autoGrow();
+    $("message").focus();
+  }));
+
+// The message box grows with its text (up to its max height).
+function autoGrow() { const m = $("message"); m.style.height = "auto"; m.style.height = Math.min(m.scrollHeight, 260) + "px"; }
+$("message").addEventListener("input", () => { autoGrow(); hideError(); });
+
+function showError(msg) { $("form-error").textContent = msg; $("form-error").hidden = false; }
+function hideError() { $("form-error").hidden = true; }
+
+function busy(on, text) {
+  const b = $("check-btn");
+  b.disabled = on;
+  b.querySelector(".label").textContent = on ? text : "Check it";
+  b.querySelector("i").innerHTML = on ? '<span class="spinner"></span>' : ICON("arrow");
+  if (!on) renderFiles();
+}
+
+async function postForm(url, form) {
+  const res = await fetch(url, { method: "POST", body: form });
+  if (!res.ok) {
+    let detail = "";
+    try { detail = (await res.json()).detail || ""; } catch (_) {}
+    throw new Error(typeof detail === "string" && detail ? detail : "Something went wrong. Please try again.");
+  }
+  return res.json();
+}
+
+$("checker").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  hideError();
+  const text = $("message").value.trim();
+  if (!text && !picked.length) { showError("Paste a message or add a screenshot, voice note or file."); $("message").focus(); return; }
+
+  const form = new FormData();
+  if (text) form.append("text", text);
+  const together = picked.length > 1;
+  const isAudio = picked[0] && picked[0].type.startsWith("audio");
+  busy(true, together ? `Reading ${picked.length} screenshots…` : isAudio ? "Listening…" : "Checking…");
+  try {
+    let v;
+    if (together) {
+      picked.forEach((f) => form.append("files", f));
+      v = await postForm("/api/check/conversation", form);
+    } else {
+      if (picked[0]) form.append("file", picked[0]);
+      v = await postForm("/api/check", form);
+    }
+    showResult(v);
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    busy(false);
+  }
+});
+
+/* ---------------- result ---------------- */
+function showResult(v) {
   lastVerdict = v;
-  const result = $("result");
-  result.className = `card result risk-border-${v.risk}`;
-  const badge = $("risk-badge");
-  badge.className = `risk-badge risk-${v.risk}`;
-  badge.textContent = LABELS[v.risk] || LABELS.unknown;
+  const r = RISK[v.risk] || RISK.unknown;
+  $("r-verdict").className = `card risk-${RISK[v.risk] ? v.risk : "unknown"}`;
+  $("r-icon").setAttribute("href", `#i-${r.icon}`);
+  $("r-risk").textContent = r.label;
+  $("r-title").textContent = v.scam_type || r.title;
+  $("r-summary").textContent = v.summary || "";
+  $("r-stage").hidden = !v.stage;
+  $("r-stage").textContent = v.stage ? `Stage: ${v.stage}` : "";
 
-  $("scam-type").textContent = v.scam_type || "";
-  $("scam-type").hidden = !v.scam_type;
-  $("summary").textContent = v.summary || "";
+  const why = [...new Set([...(v.reasons || []), ...(v.findings || []).map((f) => f.message)])];
+  list($("r-why"), why);
+  $("r-why-card").hidden = !why.length;
+  $("r-next").textContent = v.what_next || "";
+  $("r-next-card").hidden = !v.what_next;
+  list($("r-advice"), v.advice || [], "check");
+  $("r-advice-card").hidden = !(v.advice || []).length;
 
-  const reasons = [...(v.reasons || []), ...(v.findings || []).map((f) => f.message)];
-  fillList($("reasons"), [...new Set(reasons)]);
-  $("reasons-block").hidden = reasons.length === 0;
+  $("r-marked").hidden = !v.annotated_image;
+  if (v.annotated_image) {
+    $("r-marked-img").src = v.annotated_image;
+    $("r-marked-list").innerHTML = (v.marked_regions || []).map((t) => `<li>${esc(t.replace(/^\d+\.\s*/, ""))}</li>`).join("");
+  }
 
-  const marked = v.annotated_image || "";
-  $("marked-block").hidden = !marked;
-  if (marked) $("marked-image").src = marked;
-  else $("marked-image").removeAttribute("src");
-  fillList($("marked-list"), v.marked_regions || []);
+  const tl = v.timeline || [], contra = v.contradictions || [];
+  $("r-story").hidden = !tl.length && !contra.length;
+  $("r-timeline").innerHTML = tl.map((t) => `<li>${esc(t)}</li>`).join("");
+  $("r-contra-wrap").hidden = !contra.length;
+  list($("r-contra"), contra, "alert");
 
   const inside = v.extracted_text || "";
-  $("extracted-title").textContent =
-    v.input_type === "audio" ? "What the voice note says" :
-    v.input_type === "image" ? "Text we read from the image" : "What we found inside";
-  $("extracted").textContent = inside.length > 1200 ? inside.slice(0, 1200) + "…" : inside;
-  $("extracted-block").hidden = !inside;
+  $("r-text").hidden = !inside;
+  $("r-text").open = false;
+  $("r-text-title").textContent = v.input_type === "audio" ? "What the voice note says" : v.input_type === "image" ? "Text we read from the image" : "What we found inside";
+  $("r-text-body").textContent = inside;
   const fixes = v.corrections || [];
-  $("corrections").textContent = fixes.length ? `We fixed words the recording may have misheard: ${fixes.join(", ")}` : "";
-  $("corrections").hidden = !fixes.length;
+  $("r-fixes").hidden = !fixes.length;
+  $("r-fixes").textContent = fixes.length ? `We fixed words the recording may have misheard: ${fixes.join(", ")}` : "";
 
-  $("what-next").textContent = v.what_next || "";
-  $("next-block").hidden = !v.what_next;
-
-  fillList($("advice"), v.advice || []);
-  $("advice-block").hidden = !(v.advice || []).length;
-
-  const story = (v.timeline || []).length || v.stage;
-  $("story-block").hidden = !story;
-  $("stage").textContent = v.stage ? `Stage: ${v.stage}` : "";
-  $("stage").hidden = !v.stage;
-  fillList($("timeline"), v.timeline || []);
-  fillList($("contradictions"), v.contradictions || []);
-  $("contradictions-block").hidden = !(v.contradictions || []).length;
-
-  const risky = ["high", "medium"].includes(v.risk);
-  $("visit-block").hidden = true;
-  if ((v.links || []).length && v.risk !== "low") visitSite(v.links[0]);
+  const risky = v.risk === "high" || v.risk === "medium";
   $("report-btn").hidden = !risky;
   $("card-btn").hidden = !risky;
-  $("report-panel").hidden = true;
-  $("card-panel").hidden = true;
 
-  result.hidden = false;
-  result.scrollIntoView({ behavior: "smooth", block: "start" });
+  $("r-visit").hidden = true;
+  if ((v.links || []).length && v.risk !== "low") visitSite(v.links[0]);
+
+  location.hash = "#/result";
+  if (location.hash === "#/result") route();
 }
 
-async function check(event) {
-  event.preventDefault();
-  const text = $("message").value.trim();
-  const files = [...$("file").files];
-  const file = files[0];
-  if (!text && !file) {
-    $("message").focus();
-    return;
-  }
-  const btn = $("check-btn");
-  btn.disabled = true;
-  btn.textContent = file && file.type.startsWith("audio") ? "Listening…" : "Checking…";
+let visitToken = 0;
+async function visitSite(url) {
+  const token = ++visitToken;
+  $("r-visit").hidden = false;
+  $("r-visit-status").textContent = "Opening the link safely on our server. This takes a few seconds.";
+  $("r-visit-img").hidden = true;
+  $("r-visit-summary").textContent = "";
+  $("r-visit-list").innerHTML = "";
   try {
-    const form = new FormData();
-    if (text) form.append("text", text);
-    const together = files.length > 1;
-    if (together) {
-      btn.textContent = `Reading ${files.length} screenshots…`;
-      files.forEach((f) => form.append("files", f));
-    } else if (file) form.append("file", file);
-    const res = await fetch(together ? "/api/check/conversation" : "/api/check", { method: "POST", body: form });
-    if (!res.ok) {
-      let detail = "";
-      try { detail = (await res.json()).detail || ""; } catch (_) {}
-      throw new Error(typeof detail === "string" && detail ? detail : `HTTP ${res.status}`);
-    }
-    render(await res.json());
-  } catch (err) {
-    const msg = err && err.message && !err.message.startsWith("HTTP") ? err.message : "";
-    render({
-      risk: "unknown",
-      summary: msg || "Something went wrong while checking. Please try again in a moment.",
-      advice: ["Meanwhile, don't send money, codes or card details."],
-    });
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Check it";
+    const res = await fetch("/api/visit", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+    const s = await res.json();
+    if (token !== visitToken) return;
+    if (s.error) { $("r-visit-status").textContent = s.error; return; }
+    $("r-visit-status").textContent = s.final_url && s.final_url !== url ? `The link took us to ${s.final_url}` : `We opened ${url}`;
+    if (s.screenshot) { $("r-visit-img").src = s.screenshot; $("r-visit-img").hidden = false; }
+    $("r-visit-summary").textContent = s.summary || "";
+    list($("r-visit-list"), (s.findings || []).map((f) => f.message), "alert");
+  } catch (_) {
+    if (token === visitToken) $("r-visit-status").textContent = "We couldn't open the website right now.";
   }
 }
 
 function shareText(v) {
-  const lines = [
-    `TrueTick checked a message: ${LABELS[v.risk] || ""}`,
+  const r = RISK[v.risk] || RISK.unknown;
+  return [
+    `TrueTick checked a message: ${r.label}`,
     v.scam_type ? `Type: ${v.scam_type}` : "",
     v.summary || "",
     v.what_next ? `What usually happens next: ${v.what_next}` : "",
     (v.advice || []).length ? `What to do: ${v.advice.join(" ")}` : "",
     `Check your own messages: ${location.origin}`,
-  ];
-  return lines.filter(Boolean).join("\n");
+  ].filter(Boolean).join("\n");
 }
 
-async function share() {
+async function copyText(text, btn, done) {
+  try {
+    await navigator.clipboard.writeText(text);
+    const label = btn.querySelector("span") || btn;
+    const old = label.textContent;
+    label.textContent = done;
+    setTimeout(() => (label.textContent = old), 2200);
+  } catch (_) {}
+}
+
+$("share-btn").addEventListener("click", async () => {
   if (!lastVerdict) return;
   const text = shareText(lastVerdict);
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: "TrueTick", text });
-      return;
-    }
-    await navigator.clipboard.writeText(text);
-    $("share-btn").textContent = "Copied! Paste it to your family";
-    setTimeout(() => ($("share-btn").textContent = "Share with family"), 2500);
-  } catch (_) {
-    /* user cancelled sharing */
-  }
-}
-
-$("check-form").addEventListener("submit", check);
-$("share-btn").addEventListener("click", share);
-$("file").addEventListener("change", () => {
-  const fs = [...$("file").files];
-  $("file-name").textContent = fs.length > 1 ? `Selected ${fs.length} screenshots (we'll read them as one conversation)` :
-    fs.length ? `Selected: ${fs[0].name}` : "";
-  $("file-name").hidden = !fs.length;
-});
-$("again-btn").addEventListener("click", () => {
-  $("result").hidden = true;
-  $("message").value = "";
-  $("file").value = "";
-  $("file-name").hidden = true;
-  $("message").focus();
-});
-$("example-btn").addEventListener("click", () => {
-  $("message").value = EXAMPLES[exampleIndex % EXAMPLES.length];
-  exampleIndex += 1;
+  if (navigator.share) { try { await navigator.share({ title: "TrueTick", text }); } catch (_) {} return; }
+  copyText(text, $("share-btn"), "Copied. Paste it to your family");
 });
 
-// ---------- Report this scam ----------
+/* ---------------- sheets ---------------- */
+function openSheet(id) { $(id).hidden = false; $(id).querySelector("[data-close]").focus(); }
+function closeSheets() { document.querySelectorAll(".sheet-backdrop").forEach((s) => (s.hidden = true)); }
+document.querySelectorAll(".sheet-backdrop").forEach((s) =>
+  s.addEventListener("click", (e) => { if (e.target === s || e.target.closest("[data-close]")) closeSheets(); }));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheets(); });
+
+/* ---------------- report ---------------- */
+let countriesLoaded = null;
 const TZ_COUNTRY = { "Africa/Lagos": "NG", "Europe/London": "GB", "Europe/Belfast": "GB" };
-
 function guessCountry() {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
@@ -180,140 +285,116 @@ function guessCountry() {
   } catch (_) {}
   return "";
 }
-
 async function loadCountries() {
-  try {
-    const list = await (await fetch("/api/report/countries")).json();
-    const sel = $("country");
-    for (const c of [...list].reverse()) {
-      const o = document.createElement("option");
-      o.value = c.code;
-      o.textContent = c.name;
-      sel.insertBefore(o, sel.firstChild);
-    }
+  if (!countriesLoaded) {
+    countriesLoaded = fetch("/api/report/countries").then((r) => r.json()).catch(() => []);
+  }
+  const list = await countriesLoaded;
+  for (const sel of [$("report-country"), $("sr-country")]) {
+    if (sel.options.length > 1) continue;
+    for (const c of [...list].reverse()) sel.insertBefore(new Option(c.name, c.code), sel.firstChild);
     sel.value = guessCountry();
-  } catch (_) {}
+  }
+}
+function renderLinks(ul, links) {
+  ul.innerHTML = (links || []).map((l) =>
+    `<li><a href="${esc(l.url)}" target="_blank" rel="noopener noreferrer"><span>${esc(l.name)}</span>${ICON("external")}</a></li>`).join("");
+}
+async function fetchReport(verdict, country) {
+  const res = await fetch("/api/report", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ verdict: { ...verdict, annotated_image: "" }, country }),
+  });
+  return res.json();
 }
 
 let lastReport = null;
-
-async function loadReport() {
-  if (!lastVerdict) return;
-  const res = await fetch("/api/report", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ verdict: { ...lastVerdict, annotated_image: "" }, country: $("country").value }),
-  });
-  lastReport = await res.json();
-  const o = lastReport.options;
-  fillList($("always-list"), o.always || []);
-  $("report-links").replaceChildren(...(o.links || []).map((l) => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = l.url;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    a.textContent = l.name;
-    li.append(a);
-    return li;
-  }));
-  $("report-note").textContent = o.note || "";
-  $("report-note").hidden = !o.note;
+async function refreshSheetReport() {
+  lastReport = await fetchReport(lastVerdict, $("sr-country").value);
+  renderLinks($("sr-links"), lastReport.options.links);
+  $("sr-note").textContent = lastReport.options.note || "";
+  $("sr-note").hidden = !lastReport.options.note;
 }
-
 $("report-btn").addEventListener("click", async () => {
-  $("report-panel").hidden = false;
-  await loadReport();
-  $("report-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!lastVerdict) return;
+  openSheet("sheet-report");
+  await loadCountries();
+  refreshSheetReport();
 });
-$("country").addEventListener("change", loadReport);
-$("copy-report-btn").addEventListener("click", async () => {
-  if (!lastReport) return;
-  try {
-    await navigator.clipboard.writeText(lastReport.summary);
-    $("copy-report-btn").textContent = "Copied! Paste it into your report";
-    setTimeout(() => ($("copy-report-btn").textContent = "Copy a report summary"), 2500);
-  } catch (_) {}
-});
-loadCountries();
+$("sr-country").addEventListener("change", refreshSheetReport);
+$("sr-copy").addEventListener("click", () => lastReport && copyText(lastReport.summary, $("sr-copy"), "Copied. Paste it into your report"));
 
-// ---------- Family warning card (Muse Image illustration + TrueTick text) ----------
+async function loadStandaloneReport() {
+  await loadCountries();
+  const data = await fetchReport({ risk: "unknown" }, $("report-country").value);
+  renderLinks($("report-links"), data.options.links);
+  $("report-note").textContent = data.options.note || "";
+  $("report-note").hidden = !data.options.note;
+  list($("report-always"), data.options.always || [], "check");
+}
+$("report-country").addEventListener("change", loadStandaloneReport);
+
+/* ---------------- warning card ---------------- */
 let cardBlob = null;
-
 $("card-btn").addEventListener("click", async () => {
   if (!lastVerdict) return;
-  $("card-panel").hidden = false;
-  $("card-status").textContent = "Creating your card… (the first one of each type takes a few seconds)";
-  $("card-status").hidden = false;
-  $("card-image").hidden = true;
-  $("card-share-btn").hidden = true;
-  $("card-download").hidden = true;
-  $("card-panel").scrollIntoView({ behavior: "smooth", block: "start" });
+  openSheet("sheet-card");
+  $("sc-status").hidden = false;
+  $("sc-status").textContent = "Making your card. The first one of each scam type takes a few seconds.";
+  ["sc-img", "sc-share", "sc-download"].forEach((id) => ($(id).hidden = true));
   try {
     const res = await fetch("/api/card", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pattern_id: lastVerdict.pattern_id, scam_type: lastVerdict.scam_type || "" }),
     });
     if (!res.ok) throw new Error();
     cardBlob = await res.blob();
     const url = URL.createObjectURL(cardBlob);
-    $("card-image").src = url;
-    $("card-image").hidden = false;
-    $("card-download").href = url;
-    $("card-download").hidden = false;
-    $("card-share-btn").hidden = !(navigator.canShare && navigator.canShare({ files: [new File([cardBlob], "a.png", { type: "image/png" })] }));
-    $("card-status").hidden = true;
+    $("sc-img").src = url; $("sc-img").hidden = false;
+    $("sc-download").href = url; $("sc-download").hidden = false;
+    const file = new File([cardBlob], "truetick-warning.png", { type: "image/png" });
+    $("sc-share").hidden = !(navigator.canShare && navigator.canShare({ files: [file] }));
+    $("sc-status").hidden = true;
   } catch (_) {
-    $("card-status").textContent = "Sorry, we couldn't make the card right now. Please try again.";
+    $("sc-status").textContent = "We couldn't make the card right now. Please try again.";
   }
 });
-
-$("card-share-btn").addEventListener("click", async () => {
+$("sc-share").addEventListener("click", async () => {
   if (!cardBlob) return;
-  try {
-    await navigator.share({ files: [new File([cardBlob], "truetick-warning.png", { type: "image/png" })],
-                            title: "Scam alert", text: "Please read this and stay safe." });
-  } catch (_) {}
+  try { await navigator.share({ files: [new File([cardBlob], "truetick-warning.png", { type: "image/png" })], title: "Scam alert" }); } catch (_) {}
 });
 
-
-// ---------- Live Call Guard ----------
-// Records the (speakerphone) call in short complete pieces, sends each to /api/live/chunk
+/* ---------------- Live Call Guard ---------------- */
+// Records the speakerphone call in short complete pieces, sends each to /api/live/chunk
 // (Muse Voice Transcribe + instant checks), and asks Muse Spark about the whole call every few pieces.
 const LIVE_PIECE_MS = 5000;
-const live = { stream: null, recorder: null, transcript: "", running: false, pieces: 0, shown: new Set(), assessing: false };
+const live = { stream: null, recorder: null, transcript: "", running: false, pieces: 0, shown: new Set(), assessing: false, wake: null };
 
-function liveStatus(text, recording = false) {
-  $("live-status-text").textContent = text;
-  $("rec-dot").hidden = !recording;
-  $("live-status").hidden = !text;
-}
-
-function renderTranscript(latest) {
-  // Earlier words plain, the newest piece highlighted, so viewers can follow along.
-  const before = live.transcript.slice(0, live.transcript.length - latest.length).trim();
-  const mark = document.createElement("mark");
-  mark.textContent = latest;
-  $("live-transcript").replaceChildren(document.createTextNode(before ? before + " " : ""), mark);
-  $("live-transcript-block").hidden = false;
-}
-
-async function keepScreenOn(on) {
-  try {
-    if (on && "wakeLock" in navigator) live.wake = await navigator.wakeLock.request("screen");
-    else if (!on && live.wake) { await live.wake.release(); live.wake = null; }
-  } catch (_) {}
+function liveIdle(text) {
+  $("live-on").hidden = true;
+  $("live-start").hidden = false;
+  $("live-stop").hidden = true;
+  if (text) $("live-sub").textContent = text;
 }
 
 function showLiveAlert(a) {
   if (live.shown.has(a.id)) return;
   live.shown.add(a.id);
-  $("live-alert").className = `live-alert ${a.severity === "stop" ? "" : "warn"}`;
-  $("live-alert-title").textContent = (a.severity === "stop" ? "⚠️ STOP: " : "⚠️ Careful: ") + a.title;
+  $("live-alert").className = `card live-alert${a.severity === "stop" ? "" : " warn"}`;
+  $("live-alert-kind").textContent = a.severity === "stop" ? "Stop" : "Careful";
+  $("live-alert-title").textContent = a.title;
   $("live-alert-advice").textContent = a.advice;
   $("live-alert").hidden = false;
+  $("live-alert").scrollIntoView({ behavior: "smooth", block: "center" });
   if (navigator.vibrate) navigator.vibrate(a.severity === "stop" ? [400, 150, 400, 150, 400] : [300]);
+}
+
+function renderTranscript(latest) {
+  const before = live.transcript.slice(0, live.transcript.length - latest.length).trim();
+  const mark = document.createElement("mark");
+  mark.textContent = latest;
+  $("live-transcript").replaceChildren(document.createTextNode(before ? before + " " : ""), mark);
+  $("live-transcript-card").hidden = false;
 }
 
 async function liveAssess() {
@@ -326,12 +407,13 @@ async function liveAssess() {
     });
     if (!res.ok) return;
     const v = await res.json();
-    $("live-badge").className = `risk-badge risk-${v.risk}`;
-    $("live-badge").textContent = LABELS[v.risk] || LABELS.unknown;
-    $("live-type").textContent = v.scam_type || "";
-    $("live-summary").textContent = v.summary || "";
+    const r = RISK[v.risk] || RISK.unknown;
+    $("live-verdict").className = `card risk-${RISK[v.risk] ? v.risk : "unknown"}`;
+    $("live-v-icon").setAttribute("href", `#i-${r.icon}`);
+    $("live-v-risk").textContent = r.label;
+    $("live-v-title").textContent = v.scam_type || r.title;
+    $("live-v-summary").textContent = v.summary || "";
     $("live-verdict").hidden = false;
-    if (v.risk === "high" && navigator.vibrate) navigator.vibrate([400, 150, 400]);
   } catch (_) {
   } finally {
     live.assessing = false;
@@ -347,10 +429,7 @@ async function sendPiece(blob) {
     const res = await fetch("/api/live/chunk", { method: "POST", body: form });
     if (!res.ok) return;
     const body = await res.json();
-    if (body.text) {
-      live.transcript = `${live.transcript} ${body.text}`.trim();
-      renderTranscript(body.text);
-    }
+    if (body.text) { live.transcript = `${live.transcript} ${body.text}`.trim(); renderTranscript(body.text); }
     (body.alerts || []).forEach(showLiveAlert);
     live.pieces += 1;
     if (body.text && (live.pieces % 2 === 0 || (body.alerts || []).length)) liveAssess();
@@ -364,33 +443,37 @@ function recordPiece() {
   const rec = new MediaRecorder(live.stream, type ? { mimeType: type } : undefined);
   const parts = [];
   rec.ondataavailable = (e) => e.data.size && parts.push(e.data);
-  rec.onstop = () => {
-    sendPiece(new Blob(parts, { type: rec.mimeType || "audio/webm" }));
-    recordPiece(); // start the next piece straight away so nothing is missed
-  };
+  rec.onstop = () => { sendPiece(new Blob(parts, { type: rec.mimeType || "audio/webm" })); recordPiece(); };
   live.recorder = rec;
   rec.start();
   setTimeout(() => rec.state === "recording" && rec.stop(), LIVE_PIECE_MS);
 }
 
+async function keepScreenOn(on) {
+  try {
+    if (on && "wakeLock" in navigator) live.wake = await navigator.wakeLock.request("screen");
+    else if (!on && live.wake) { await live.wake.release(); live.wake = null; }
+  } catch (_) {}
+}
+
 async function startLive() {
   if (!navigator.mediaDevices || !window.MediaRecorder) {
-    liveStatus("This browser can't listen. Try Chrome or Safari, and open TrueTick over https.");
+    $("live-sub").textContent = "This browser can't listen. Try Chrome or Safari over a secure (https) link.";
     return;
   }
   try {
-    live.stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true },
-    });
+    live.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, autoGainControl: true } });
   } catch (_) {
-    liveStatus("We need microphone permission to listen. Allow it in your browser settings and try again.");
+    $("live-sub").textContent = "We need the microphone to listen. Allow it in your browser settings, then try again.";
     return;
   }
   Object.assign(live, { running: true, transcript: "", pieces: 0, shown: new Set() });
-  ["live-alert", "live-verdict", "live-transcript-block"].forEach((id) => ($(id).hidden = true));
+  ["live-alert", "live-verdict", "live-transcript-card"].forEach((id) => ($(id).hidden = true));
+  $("live-head").textContent = "Listening to your call";
+  $("live-sub").textContent = "Keep the call on speaker, close to this device.";
+  $("live-on").hidden = false;
   $("live-start").hidden = true;
   $("live-stop").hidden = false;
-  liveStatus("Listening… keep the call on speaker, near this device.", true);
   keepScreenOn(true);
   recordPiece();
 }
@@ -399,47 +482,14 @@ function stopLive() {
   live.running = false;
   if (live.recorder && live.recorder.state === "recording") live.recorder.stop();
   if (live.stream) live.stream.getTracks().forEach((t) => t.stop());
-  $("live-start").hidden = false;
-  $("live-stop").hidden = true;
   keepScreenOn(false);
-  liveStatus(live.transcript ? "Stopped. Here's what we found." : "Stopped.");
-  setTimeout(liveAssess, 800);
+  $("live-head").textContent = live.transcript ? "Call check finished" : "On a call you're unsure about?";
+  liveIdle(live.transcript ? "Here's what we found." : "Put the call on speaker, then start listening on this device.");
+  if (live.transcript) setTimeout(liveAssess, 800);
 }
 
 $("live-start").addEventListener("click", startLive);
 $("live-stop").addEventListener("click", stopLive);
 
-
-// ---------- "We visited the website for you" ----------
-let visitToken = 0;
-
-async function visitSite(url) {
-  const token = ++visitToken;
-  $("visit-block").hidden = false;
-  $("visit-status").textContent = "Opening the link safely… (takes about 10 seconds)";
-  $("visit-status").hidden = false;
-  $("visit-image").hidden = true;
-  $("visit-summary").textContent = "";
-  fillList($("visit-findings"), []);
-  try {
-    const res = await fetch("/api/visit", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }),
-    });
-    const s = await res.json();
-    if (token !== visitToken) return; // a newer check started
-    if (s.error) {
-      $("visit-status").textContent = s.error;
-      return;
-    }
-    $("visit-status").textContent = s.final_url && s.final_url !== url ? `The link took us to: ${s.final_url}` : "";
-    $("visit-status").hidden = !$("visit-status").textContent;
-    if (s.screenshot) {
-      $("visit-image").src = s.screenshot;
-      $("visit-image").hidden = false;
-    }
-    $("visit-summary").textContent = s.summary || "";
-    fillList($("visit-findings"), (s.findings || []).map((f) => f.message));
-  } catch (_) {
-    if (token === visitToken) $("visit-status").textContent = "We couldn't open the website right now.";
-  }
-}
+/* ---------------- start ---------------- */
+route();

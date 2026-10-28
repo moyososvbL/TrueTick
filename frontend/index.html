@@ -2,164 +2,339 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>TrueTick: check before you trust</title>
-  <meta name="description" content="Paste a suspicious message and TrueTick tells you if it looks like a scam, why, and what to do next.">
+  <meta name="description" content="Check any message, screenshot, voice note, link or call. TrueTick tells you if it looks like a scam, why, and what to do.">
+  <meta name="theme-color" content="#f6f8fc">
+  <link rel="preload" href="fonts/Outfit-Bold.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply the saved theme before first paint (no flash).
+    try { if (localStorage.getItem("tt-theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (_) {}
+  </script>
 </head>
 <body>
-  <header class="top">
-    <div class="brand">
-      <svg class="logo" viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M16 2 4 7v8c0 7.5 5.1 13.4 12 15 6.9-1.6 12-7.5 12-15V7L16 2Z" fill="var(--accent)"/>
-        <path d="m10 16 4.2 4.2L22.5 12" fill="none" stroke="var(--on-accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <span class="name">TrueTick</span>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="logo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#1d4fe0"/></linearGradient>
+  </defs>
+  <symbol id="i-logo" viewBox="0 0 32 32"><path d="M16 2.5 27 6.6v8.2c0 7-4.6 12.1-11 14.7C9.6 26.9 5 21.8 5 14.8V6.6z" fill="url(#logo-g)"/><path d="M10.5 16.2l3.7 3.6 7.4-7.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/></g></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></g></symbol>
+    <symbol id="i-qr" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><path d="M14 14h2v2h-2zM18 18h2v2h-2zM14 18v2M20 14v2"/></g></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></g></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></g></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M15 6l-6 6 6 6"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6.5v5.6c0 4.7 3.3 8.2 8 9.9 4.7-1.7 8-5.2 8-9.9V6.5z"/><path d="m8.8 12.2 2.4 2.3 4.2-4.4"/></g></symbol>
+    <symbol id="i-shield-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6.5v5.6c0 4.7 3.3 8.2 8 9.9 4.7-1.7 8-5.2 8-9.9V6.5z"/><path d="M12 8.5v4.5M12 16v.1"/></g></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2.5 20h19z"/><path d="M12 10v4M12 17.2v.1"/></g></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12.5 2.8 2.7L16 10"/></g></symbol>
+    <symbol id="i-question" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 0 1 5 1c0 1.8-2.5 2.2-2.5 3.8M12 17.2v.1"/></g></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/></g></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 21V4h11l-1.5 4L16 12H5"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></g></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></g></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></g></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></g></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></g></symbol>
+    <symbol id="i-video" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></g></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13M12 8S10.5 3 8 4.5 9.5 8 12 8zM12 8s1.5-5 4-3.5S14.5 8 12 8z"/></g></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 20s-7-4.5-9-9a4.8 4.8 0 0 1 9-3 4.8 4.8 0 0 1 9 3c-2 4.5-9 9-9 9z"/></symbol>
+  </g>
+</svg>
+
+<header class="wrap topbar">
+  <a class="brand" href="#/" aria-label="TrueTick home"><svg aria-hidden="true"><use href="#i-logo"/></svg>TrueTick</a>
+  <nav class="links" aria-label="Main">
+    <a href="#/" data-route="home">Check</a>
+    <a href="#/live" data-route="live">Live Call Guard</a>
+    <a href="#/tips" data-route="tips">Safety tips</a>
+    <a href="#/report" data-route="report">Report a scam</a>
+  </nav>
+  <div class="top-right">
+    <button class="toggle" id="theme" type="button" aria-label="Dark mode" aria-pressed="false">
+      <span class="knob"></span>
+      <svg class="icon sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      <svg class="icon moon" aria-hidden="true"><use href="#i-moon"/></svg>
+    </button>
+    <a class="btn btn-dark get-app" href="#/app"><svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>Get the Android app</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ===================== HOME ===================== -->
+  <section class="view home" data-view="home">
+    <div class="wrap">
+      <div class="hero">
+        <div>
+          <h1 class="d-only">Not sure it's real?<br><span>Check it first.</span></h1>
+          <div class="m-hello m-only"><h1>Not sure it's real?<br><span>Check it first.</span></h1><img src="img/coin.svg" alt=""></div>
+
+          <form class="checker" id="checker" novalidate>
+            <div class="box">
+              <label class="sr-only" for="message">Message, email or link</label>
+              <textarea id="message" maxlength="8000" rows="3" placeholder="Paste a message, email or link"></textarea>
+              <div class="attach" role="group" aria-label="Add a file">
+                <button type="button" class="pill" data-pick="image"><svg class="icon" aria-hidden="true"><use href="#i-image"/></svg>Screenshots</button>
+                <button type="button" class="pill" data-pick="audio"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg>Voice note</button>
+                <button type="button" class="pill" data-pick="qr"><svg class="icon" aria-hidden="true"><use href="#i-qr"/></svg>QR code</button>
+                <button type="button" class="pill" data-pick="file"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>File</button>
+              </div>
+              <div class="files" id="files" hidden></div>
+            </div>
+            <input type="file" id="pick-image" accept="image/*" multiple hidden>
+            <input type="file" id="pick-audio" accept="audio/*,.opus,.ogg,.m4a,.mp3,.wav,.aac,.amr" hidden>
+            <input type="file" id="pick-qr" accept="image/*" capture="environment" hidden>
+            <input type="file" id="pick-file" hidden>
+            <div class="check-row">
+              <span class="privacy"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Nothing you check is saved</span>
+              <button class="btn btn-dark btn-go" id="check-btn" type="submit"><span class="label">Check it</span><i><svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></i></button>
+            </div>
+            <p class="form-error" id="form-error" role="alert" hidden></p>
+            <div class="examples"><span>Try an example:</span>
+              <button type="button" data-example="0">Bank text</button>
+              <button type="button" data-example="1">Romance</button>
+              <button type="button" data-example="2">Job offer</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="stage" aria-hidden="true">
+          <img class="coin" src="img/coin.svg" alt="">
+          <div class="sample">
+            <div class="msg">
+              <div class="from"><span class="avatar-letter">Z</span><b>Zenora Bank</b><time>10:42</time></div>
+              <p>Your account is on hold. Reply with the 6&#8209;digit code we just sent.</p>
+            </div>
+            <div class="verdict-row">
+              <span class="tile-icon"><svg class="icon"><use href="#i-shield-alert"/></svg></span>
+              <div><h3>Likely a scam</h3><p class="sub">Banks never ask for codes.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- phone: bento -->
+      <div class="m-bento m-only">
+        <a class="m-tile live" href="#/live">
+          <img src="img/rings.svg" alt="">
+          <h3>Live Call<br>Guard</h3><p>Warns you mid-call</p>
+          <span class="start"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg>Start listening</span>
+        </a>
+        <button class="m-tile" type="button" data-pick="image"><img src="img/bubbles.svg" alt=""><h3>Screenshots</h3><p>Chats, posts, emails</p></button>
+        <button class="m-tile" type="button" data-pick="audio"><img src="img/mic.svg" alt=""><h3>Voice note</h3><p>Or a recording</p></button>
+      </div>
+      <a class="m-trend m-only" href="#/tips">
+        <span class="tile-icon sm"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg></span>
+        <span><small>Trending this week</small><strong>Fake bank calls for OTPs</strong></span>
+        <span class="chev"><svg class="icon" aria-hidden="true"><use href="#i-chev"/></svg></span>
+      </a>
+
+      <!-- desktop: feature cards -->
+      <div class="features d-only">
+        <a class="feature" href="#/live"><img src="img/rings.svg" alt=""><h3>Live Call Guard</h3><p>Warns you when a caller asks for a code.</p><span class="tag">On calls</span><span class="go"><svg class="icon"><use href="#i-arrow"/></svg></span></a>
+        <a class="feature" href="#/" data-pick="image"><img src="img/bubbles.svg" alt=""><h3>Whole chats</h3><p>Spots where their story changes.</p><span class="tag">Screenshots</span><span class="go"><svg class="icon"><use href="#i-arrow"/></svg></span></a>
+        <a class="feature" href="#/" data-focus="message"><img src="img/chain.svg" alt=""><h3>Links</h3><p>We open risky links so you don't have to.</p><span class="tag">Websites</span><span class="go"><svg class="icon"><use href="#i-arrow"/></svg></span></a>
+        <a class="feature" href="#/report"><img src="img/flag.svg" alt=""><h3>Report it</h3><p>Where to report it in your country.</p><span class="tag">Reporting</span><span class="go"><svg class="icon"><use href="#i-arrow"/></svg></span></a>
+      </div>
     </div>
-  </header>
+  </section>
 
-  <main>
-    <section class="intro">
-      <h1>Not sure about a message?<br>Check it before you act.</h1>
-      <p>Paste a text, email, chat or what a caller said. TrueTick tells you if it looks like a scam, why, and what to do next.</p>
-    </section>
-
-    <form id="check-form" class="card">
-      <label for="message">Paste the message here</label>
-      <textarea id="message" name="message" rows="7" maxlength="8000"
-        placeholder="Example: Your bank account has been blocked. Send the OTP we just sent you to unlock it."></textarea>
-      <label for="file" class="upload-label">Or upload a screenshot, photo of a QR code, voice note or file.
-        Pick several screenshots of one chat (in order) and we'll read the whole conversation.</label>
-      <input type="file" id="file" name="file" multiple
-        accept="image/*,audio/*,.opus,.ogg,.m4a,.mp3,.wav,.aac,.amr,.apk,.pdf,.doc,.docx">
-      <p class="file-name" id="file-name" hidden></p>
-      <div class="row">
-        <button type="submit" id="check-btn" class="primary">Check it</button>
-        <button type="button" id="example-btn" class="ghost">Try an example</button>
+  <!-- ===================== RESULT ===================== -->
+  <section class="view page" data-view="result" hidden>
+    <div class="wrap">
+      <div class="page-head">
+        <a class="back" href="#/" aria-label="Check something else"><svg class="icon"><use href="#i-back"/></svg></a>
+        <h1>Result</h1>
       </div>
-      <p class="privacy">🔒 We don't save what you paste. It's only used to check it.</p>
-    </form>
+      <div class="cols">
+        <div class="stack" aria-live="polite">
+          <div class="card" id="r-verdict">
+            <div class="verdict">
+              <span class="tile-icon"><svg class="icon"><use id="r-icon" href="#i-shield-alert"/></svg></span>
+              <div>
+                <small id="r-risk"></small>
+                <h2 id="r-title"></h2>
+                <p id="r-summary"></p>
+              </div>
+            </div>
+            <span class="stage-chip" id="r-stage" hidden></span>
+          </div>
 
-    <section id="result" class="card result" hidden aria-live="polite">
-      <div class="risk-badge" id="risk-badge"></div>
-      <p class="scam-type" id="scam-type"></p>
-      <p class="summary" id="summary"></p>
+          <div class="card" id="r-why-card"><h2>Why</h2><ul class="list" id="r-why"></ul></div>
+          <div class="card next" id="r-next-card"><h2>What usually happens next</h2><p id="r-next"></p></div>
+          <div class="card" id="r-advice-card"><h2>What to do</h2><ul class="list" id="r-advice"></ul></div>
 
-      <div class="block" id="story-block" hidden>
-        <h2>The whole conversation</h2>
-        <p class="stage" id="stage" hidden></p>
-        <ol id="timeline"></ol>
-        <div id="contradictions-block" hidden>
-          <h2>Where their story doesn't add up</h2>
-          <ul id="contradictions"></ul>
+          <div class="card marked" id="r-marked" hidden><h2>What we spotted on the image</h2><img id="r-marked-img" alt="Your image with suspicious areas outlined"><ol id="r-marked-list"></ol></div>
+
+          <div class="card" id="r-story" hidden>
+            <h2>How the chat unfolded</h2><ol class="timeline" id="r-timeline"></ol>
+            <div id="r-contra-wrap" hidden><h2 style="margin-top:24px">Where their story doesn't add up</h2><ul class="list" id="r-contra"></ul></div>
+          </div>
+
+          <div class="card" id="r-visit" hidden>
+            <h2>We visited the website for you</h2>
+            <p class="muted" id="r-visit-status"></p>
+            <img class="visit-shot" id="r-visit-img" alt="Screenshot of the website the link opens" hidden>
+            <p id="r-visit-summary"></p>
+            <ul class="list" id="r-visit-list" style="margin-top:12px"></ul>
+          </div>
+
+          <details class="card" id="r-text" hidden>
+            <summary><span id="r-text-title">What we read</span><svg class="icon"><use href="#i-down"/></svg></summary>
+            <div class="quote" id="r-text-body"></div>
+            <p class="muted" id="r-fixes" style="margin-top:12px" hidden></p>
+          </details>
         </div>
-      </div>
 
-      <div class="block" id="visit-block" hidden>
-        <h2>We visited the website for you</h2>
-        <p class="muted">We opened the link in a sealed browser on our server, so you don't have to.</p>
-        <p id="visit-status" class="muted"></p>
-        <img id="visit-image" class="visit-image" alt="Screenshot of the website the link opens" hidden>
-        <p id="visit-summary" class="summary"></p>
-        <ul id="visit-findings"></ul>
+        <aside class="side stack">
+          <div class="card actions">
+            <button class="btn btn-dark" id="share-btn" type="button"><svg class="icon"><use href="#i-share"/></svg>Share with family</button>
+            <button class="btn btn-ghost" id="report-btn" type="button"><svg class="icon"><use href="#i-flag"/></svg>Report this scam</button>
+            <button class="btn btn-ghost" id="card-btn" type="button"><svg class="icon"><use href="#i-card"/></svg>Make a warning card</button>
+            <a class="btn btn-ghost" href="#/"><svg class="icon"><use href="#i-back"/></svg>Check something else</a>
+          </div>
+          <p class="muted" style="font-size:13px;padding:0 8px">TrueTick can make mistakes. When money is involved, check with the company using a number you already know.</p>
+        </aside>
       </div>
+    </div>
+  </section>
 
-      <div class="block" id="marked-block" hidden>
-        <h2>What we spotted on the image</h2>
-        <img id="marked-image" class="marked-image" alt="The uploaded image with suspicious areas outlined in red">
-        <ul id="marked-list"></ul>
-      </div>
+  <!-- ===================== LIVE CALL GUARD ===================== -->
+  <section class="view page" data-view="live" hidden>
+    <div class="wrap">
+      <div class="page-head"><a class="back" href="#/" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></a><h1>Live Call Guard</h1></div>
+      <div class="cols">
+        <div class="stack">
+          <div class="card live-hero">
+            <img src="img/rings.svg" alt="">
+            <h2 id="live-head">On a call you're unsure about?</h2>
+            <p id="live-sub">Put the call on speaker, then start listening on this device. We'll warn you the moment they ask for something dangerous.</p>
+            <div class="listening" id="live-on" hidden><span class="bars"><b></b><b></b><b></b><b></b></span><span id="live-status">Listening</span></div>
+            <div><button class="btn btn-dark" id="live-start" type="button"><svg class="icon"><use href="#i-mic"/></svg>Start listening</button></div>
+            <div><button class="btn btn-ghost" id="live-stop" type="button" hidden>Stop</button></div>
+          </div>
 
-      <div class="block" id="extracted-block" hidden>
-        <h2 id="extracted-title">What we found inside</h2>
-        <p class="extracted" id="extracted"></p>
-        <p class="corrections" id="corrections" hidden></p>
-      </div>
+          <div class="card live-alert" id="live-alert" role="alert" hidden>
+            <div class="verdict">
+              <span class="tile-icon"><svg class="icon"><use href="#i-alert"/></svg></span>
+              <div><small id="live-alert-kind">Stop</small><h2 id="live-alert-title"></h2><p id="live-alert-advice"></p></div>
+            </div>
+          </div>
 
-      <div class="block" id="reasons-block">
-        <h2>Why</h2>
-        <ul id="reasons"></ul>
-      </div>
+          <div class="card" id="live-verdict" hidden>
+            <div class="verdict" id="live-verdict-inner">
+              <span class="tile-icon"><svg class="icon"><use id="live-v-icon" href="#i-shield-alert"/></svg></span>
+              <div><small id="live-v-risk"></small><h2 id="live-v-title"></h2><p id="live-v-summary"></p></div>
+            </div>
+          </div>
 
-      <div class="block next" id="next-block">
-        <h2>What usually happens next</h2>
-        <p id="what-next"></p>
-      </div>
-
-      <div class="block" id="advice-block">
-        <h2>What to do</h2>
-        <ul id="advice"></ul>
-      </div>
-
-      <div class="row actions">
-        <button type="button" id="share-btn" class="primary">Share with family</button>
-        <button type="button" id="report-btn" class="ghost" hidden>Report this scam</button>
-        <button type="button" id="card-btn" class="ghost" hidden>Make a warning card for family</button>
-        <button type="button" id="again-btn" class="ghost">Check another</button>
-      </div>
-
-      <div class="report" id="card-panel" hidden>
-        <h2>Warning card for family</h2>
-        <p class="report-note" id="card-status">Creating your card…</p>
-        <img id="card-image" class="marked-image" alt="A scam warning card to share with family" hidden>
-        <div class="row">
-          <button type="button" id="card-share-btn" class="primary" hidden>Share card</button>
-          <a id="card-download" class="ghost button-link" download="truetick-warning.png" hidden>Download</a>
+          <div class="card transcript" id="live-transcript-card" hidden>
+            <h2>What we're hearing</h2>
+            <p id="live-transcript"></p>
+          </div>
         </div>
-        <p class="report-note">The card only describes the type of scam. Your own message is never included.</p>
-      </div>
 
-      <div class="report" id="report-panel" hidden>
-        <h2>Report this scam</h2>
-        <label for="country">Where are you?</label>
-        <select id="country"><option value="">Another country</option></select>
-        <ul id="always-list"></ul>
-        <ul id="report-links" class="report-links"></ul>
-        <p class="report-note" id="report-note"></p>
-        <button type="button" id="copy-report-btn" class="primary">Copy a report summary</button>
-        <p class="report-note">Paste it into the official report form, your bank's fraud team, or the app where the scammer contacted you.</p>
+        <aside class="side stack">
+          <div class="card">
+            <h2>How it works</h2>
+            <ol class="how">
+              <li>Put the call on speaker, near this device.</li>
+              <li>Tap Start listening.</li>
+              <li>If they ask for a code, PIN, gift card or a transfer, you'll see a warning.</li>
+            </ol>
+          </div>
+          <div class="card"><p class="muted" style="font-size:14px">Your phone keeps its microphone for the call, so listen on a second device: another phone, a tablet or a laptop. Nothing is recorded or saved.</p></div>
+        </aside>
       </div>
-      <p class="disclaimer">TrueTick can make mistakes. When money is involved, always double-check through an official contact.</p>
-    </section>
+    </div>
+  </section>
 
-
-    <section id="live" class="card live">
-      <h2>📞 Live Call Guard</h2>
-      <p class="muted">On a suspicious call? Put it on <strong>speaker</strong>, then tap Start. TrueTick listens and
-        warns you the moment the caller asks for something dangerous. Nothing is recorded or saved.</p>
-      <div class="row">
-        <button type="button" id="live-start" class="primary">Start Live Call Guard</button>
-        <button type="button" id="live-stop" class="ghost" hidden>Stop</button>
+  <!-- ===================== TIPS ===================== -->
+  <section class="view page" data-view="tips" hidden>
+    <div class="wrap">
+      <div class="page-head"><a class="back" href="#/" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></a><h1>Safety tips</h1></div>
+      <div class="tips">
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-lock"/></svg></span><h3>Codes are secret</h3><p>No bank, company or government will ever ask for your PIN, password or a code sent to your phone.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-phone"/></svg></span><h3>Knowing your name proves nothing</h3><p>Scammers buy leaked details. If someone calls from "your bank", hang up and call the number on your card.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-gift"/></svg></span><h3>Gift cards are for gifts</h3><p>Anyone asking you to pay with gift cards, crypto or a transfer to a "safe account" is a scammer.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-heart"/></svg></span><h3>Love doesn't ask for money</h3><p>If someone you've never met in person needs money, stop. Ask a friend before you send anything.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-video"/></svg></span><h3>Is that video call real?</h3><p>Ask them to turn their head fully sideways or wave a hand across their face. Never undress or send private photos on a call.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-image"/></svg></span><h3>A screenshot isn't payment</h3><p>Before you release goods, check the money in your own bank app. Receipts are easy to fake.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-globe"/></svg></span><h3>Look twice at links</h3><p>"rnicrosoft" is not "microsoft". If a message rushes you to log in, open the app or website yourself instead.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-shield"/></svg></span><h3>Already paid?</h3><p>Call your bank straight away and ask them to stop the payment. Then report it. Watch out for "recovery" offers: they're scams too.</p></div>
       </div>
-      <p id="live-status" class="live-status" hidden><span class="rec-dot" id="rec-dot" hidden></span><span id="live-status-text"></span></p>
-      <div id="live-alert" class="live-alert" hidden role="alert">
-        <p class="live-alert-title" id="live-alert-title"></p>
-        <p id="live-alert-advice"></p>
-      </div>
-      <div id="live-verdict" class="live-verdict" hidden>
-        <span id="live-badge" class="risk-badge"></span>
-        <p id="live-type" class="scam-type"></p>
-        <p id="live-summary" class="summary"></p>
-      </div>
-      <details id="live-transcript-block" open hidden>
-        <summary>What we're hearing (live)</summary>
-        <p id="live-transcript" class="extracted"></p>
-      </details>
-    </section>
+    </div>
+  </section>
 
-    <section class="card rules">
-      <h2>Golden rules</h2>
-      <ul>
-        <li><strong>Your bank will never ask</strong> for your PIN, CVV, OTP or password, by phone, SMS or email.</li>
-        <li><strong>Knowing your name or account number</strong> doesn't prove a caller is real. Scammers buy leaked data.</li>
-        <li><strong>Anyone asking for gift cards</strong> is a scammer.</li>
-        <li><strong>Can't video call, ever?</strong> Don't send them money.</li>
-        <li><strong>In doubt?</strong> Hang up and call the number on the back of your card.</li>
-      </ul>
-    </section>
-  </main>
+  <!-- ===================== REPORT ===================== -->
+  <section class="view page" data-view="report" hidden>
+    <div class="wrap">
+      <div class="page-head"><a class="back" href="#/" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></a><h1>Report a scam</h1></div>
+      <div class="cols">
+        <div class="card">
+          <label class="field">Where are you?<select id="report-country"><option value="">Somewhere else</option></select></label>
+          <ul class="links-list" id="report-links"></ul>
+          <p class="muted" id="report-note" style="margin-top:12px" hidden></p>
+        </div>
+        <aside class="card"><h2>Before you report</h2><ul class="list" id="report-always"></ul></aside>
+      </div>
+    </div>
+  </section>
 
-  <footer>Built with Meta's Muse Spark · TrueTick</footer>
-  <script src="app.js"></script>
+  <!-- ===================== GET THE APP ===================== -->
+  <section class="view page" data-view="app" hidden>
+    <div class="wrap">
+      <div class="page-head"><a class="back" href="#/" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></a><h1>Get the Android app</h1></div>
+      <div class="card" style="max-width:640px">
+        <p>The Android app adds sharing straight from WhatsApp, SMS and your gallery: tap Share, then TrueTick.</p>
+        <p class="muted" style="margin-top:12px" id="app-note">The download link will appear here when the app is ready. Until then, add this page to your home screen from your browser menu.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot"><div class="wrap"><span>TrueTick checks messages with Meta's Muse Spark, Muse Voice and Muse Image models.</span><span>Nothing you check is saved.</span></div></footer>
+
+<nav class="tabbar" aria-label="Main">
+  <a href="#/" data-route="home"><svg class="icon"><use href="#i-shield"/></svg><span>Check</span></a>
+  <a href="#/live" data-route="live"><svg class="icon"><use href="#i-phone"/></svg><span>Live</span></a>
+  <a href="#/tips" data-route="tips"><svg class="icon"><use href="#i-book"/></svg><span>Tips</span></a>
+  <a href="#/report" data-route="report"><svg class="icon"><use href="#i-flag"/></svg><span>Report</span></a>
+</nav>
+
+<!-- sheets -->
+<div class="sheet-backdrop" id="sheet-report" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sr-title">
+    <div class="sheet-head"><h2 id="sr-title">Report this scam</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+    <label class="field">Where are you?<select id="sr-country"><option value="">Somewhere else</option></select></label>
+    <ul class="links-list" id="sr-links"></ul>
+    <p class="muted" id="sr-note" style="margin-top:12px" hidden></p>
+    <button class="btn btn-dark" id="sr-copy" type="button" style="width:100%;margin-top:16px"><svg class="icon"><use href="#i-copy"/></svg><span>Copy a summary for your report</span></button>
+  </div>
+</div>
+<div class="sheet-backdrop" id="sheet-card" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sc-title">
+    <div class="sheet-head"><h2 id="sc-title">Warning card</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+    <p class="muted" id="sc-status">Making your card…</p>
+    <img class="card-preview" id="sc-img" alt="A warning card about this scam" hidden>
+    <div class="actions" style="margin-top:16px">
+      <button class="btn btn-dark" id="sc-share" type="button" hidden><svg class="icon"><use href="#i-share"/></svg>Share card</button>
+      <a class="btn btn-ghost" id="sc-download" download="truetick-warning.png" hidden><svg class="icon"><use href="#i-download"/></svg>Download</a>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
