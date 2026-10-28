@@ -13,7 +13,7 @@ from PIL import Image, UnidentifiedImageError
 
 from backend.app.ai import meta_client, prompts
 from backend.app.analyzers.common import apply_findings, parse_model_json, verdict_from_model
-from backend.app.analyzers.qr import decode_qr_codes
+from backend.app.analyzers.qr import decode_qr_codes, describe_qr
 from backend.app.analyzers.text import analyze_text
 from backend.app.checks.link_inspect import inspect_links
 from backend.app.checks.links import extract_urls, run_checks
@@ -38,21 +38,29 @@ def validate_image(data: bytes) -> None:
         raise BadImageError("This doesn't look like a valid image.") from e
 
 
+async def analyze_qr_contents(qr_contents: list[str], caption: str = "") -> Verdict:
+    """Judge what's inside one or more QR codes (from a photo, or scanned live in the app)."""
+    joined = "\n".join(qr_contents)
+    context = ("The user scanned a QR code (it has NOT been opened). It contains:\n" + joined +
+               "\n\nJudge where it leads and what it would make the phone do.")
+    if caption:
+        context += f"\n\nThe user added: {caption}"
+    verdict = await analyze_text(context)
+    facts = [f for c in qr_contents for f in describe_qr(c)]
+    # Crypto payments and app installs raise the risk; the rest is information for the user.
+    verdict = apply_findings(verdict, [f for f in facts if f.severity == "high"])
+    verdict.findings = facts + [f for f in verdict.findings if f not in facts]
+    verdict.input_type = "image"
+    verdict.extracted_text = joined
+    verdict.links = [c for c in qr_contents if c.lower().startswith(("http://", "https://"))][:3]
+    return verdict
+
+
 async def _check_qr(data: bytes, caption: str) -> Verdict | None:
     qr_contents = decode_qr_codes(data)
     if not qr_contents:
         return None
-    joined = "\n".join(qr_contents)
-    context = "The user scanned a QR code. It contains:\n" + joined
-    if caption:
-        context += f"\n\nThe user added: {caption}"
-    verdict = await analyze_text(context)
-    # Informational: added after the risk was decided, so it doesn't change the risk level.
-    verdict.findings = [Finding(kind="qr", severity="medium", message=f"This QR code opens: {c}")
-                        for c in qr_contents] + verdict.findings
-    verdict.input_type = "image"
-    verdict.extracted_text = joined
-    return verdict
+    return await analyze_qr_contents(qr_contents, caption)
 
 
 async def _read_with_vision(data: bytes, mime: str, caption: str) -> Verdict:

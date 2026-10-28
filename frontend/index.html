@@ -56,6 +56,7 @@
   <a class="brand" href="#/" aria-label="TrueTick home"><svg aria-hidden="true"><use href="#i-logo"/></svg>TrueTick</a>
   <nav class="links" aria-label="Main">
     <a href="#/" data-route="home">Check</a>
+    <a href="#/scan" data-route="scan">Scan QR</a>
     <a href="#/live" data-route="live">Live Call Guard</a>
     <a href="#/tips" data-route="tips">Safety tips</a>
     <a href="#/report" data-route="report">Report a scam</a>
@@ -87,7 +88,7 @@
               <div class="attach" role="group" aria-label="Add a file">
                 <button type="button" class="pill" data-pick="image"><svg class="icon" aria-hidden="true"><use href="#i-image"/></svg>Screenshots</button>
                 <button type="button" class="pill" data-pick="audio"><svg class="icon" aria-hidden="true"><use href="#i-mic"/></svg>Voice note</button>
-                <button type="button" class="pill" data-pick="qr"><svg class="icon" aria-hidden="true"><use href="#i-qr"/></svg>QR code</button>
+                <button type="button" class="pill" data-go="scan"><svg class="icon" aria-hidden="true"><use href="#i-qr"/></svg>QR code</button>
                 <button type="button" class="pill" data-pick="file"><svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>File</button>
               </div>
               <div class="files" id="files" hidden></div>
@@ -210,6 +211,47 @@
     </div>
   </section>
 
+
+  <!-- ===================== SCAN QR ===================== -->
+  <section class="view page" data-view="scan" hidden>
+    <div class="wrap">
+      <div class="page-head"><a class="back" href="#/" aria-label="Back"><svg class="icon"><use href="#i-back"/></svg></a><h1>Scan a QR code</h1></div>
+      <div class="cols">
+        <div class="card scan-card">
+          <div class="viewfinder" id="scan-box">
+            <video id="scan-video" playsinline muted></video>
+            <span class="corners" aria-hidden="true"></span>
+            <div class="scan-msg" id="scan-msg">
+              <svg class="icon"><use href="#i-qr"/></svg>
+              <p id="scan-msg-text">Point your camera at the QR code. We read it without opening it.</p>
+              <button class="btn btn-dark" id="scan-start" type="button"><svg class="icon"><use href="#i-qr"/></svg>Start camera</button>
+            </div>
+          </div>
+          <div class="scan-found" id="scan-found" hidden>
+            <small>This QR code contains</small>
+            <p id="scan-content"></p>
+          </div>
+          <div class="scan-actions">
+            <button class="btn btn-ghost" id="scan-photo-btn" type="button"><svg class="icon"><use href="#i-image"/></svg>Use a photo instead</button>
+            <button class="btn btn-ghost" id="scan-again" type="button" hidden>Scan another</button>
+          </div>
+          <input type="file" id="scan-photo" accept="image/*" hidden>
+        </div>
+        <aside class="side stack">
+          <div class="card">
+            <h2>What we check</h2>
+            <ol class="how">
+              <li>Where the code really leads, without opening it on your phone.</li>
+              <li>Fake look-alike web addresses and brand-new websites.</li>
+              <li>We open the page in a sealed browser and check if it's a copy of a real site.</li>
+            </ol>
+          </div>
+          <div class="card"><p class="muted" style="font-size:14px">The camera picture stays on your device. Only the text inside the QR code is checked.</p></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== LIVE CALL GUARD ===================== -->
   <section class="view page" data-view="live" hidden>
     <div class="wrap">
@@ -273,6 +315,8 @@
         <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-image"/></svg></span><h3>A screenshot isn't payment</h3><p>Before you release goods, check the money in your own bank app. Receipts are easy to fake.</p></div>
         <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-globe"/></svg></span><h3>Look twice at links</h3><p>"rnicrosoft" is not "microsoft". If a message rushes you to log in, open the app or website yourself instead.</p></div>
         <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-shield"/></svg></span><h3>Already paid?</h3><p>Call your bank straight away and ask them to stop the payment. Then report it. Watch out for "recovery" offers: they're scams too.</p></div>
+        <div class="card tip"><span class="tile-icon"><svg class="icon"><use href="#i-qr"/></svg></span><h3>Scan before you scan</h3><p>Fake QR stickers get placed over real ones on parking meters, posters and menus. Scan them with TrueTick first.</p></div>
+        <a class="card tip" href="#/report"><span class="tile-icon"><svg class="icon"><use href="#i-flag"/></svg></span><h3>Report a scam</h3><p>Find the official place to report it in your country.</p></a>
       </div>
     </div>
   </section>
@@ -308,9 +352,9 @@
 
 <nav class="tabbar" aria-label="Main">
   <a href="#/" data-route="home"><svg class="icon"><use href="#i-shield"/></svg><span>Check</span></a>
+  <a href="#/scan" data-route="scan"><svg class="icon"><use href="#i-qr"/></svg><span>Scan</span></a>
   <a href="#/live" data-route="live"><svg class="icon"><use href="#i-phone"/></svg><span>Live</span></a>
   <a href="#/tips" data-route="tips"><svg class="icon"><use href="#i-book"/></svg><span>Tips</span></a>
-  <a href="#/report" data-route="report"><svg class="icon"><use href="#i-flag"/></svg><span>Report</span></a>
 </nav>
 
 <!-- sheets -->

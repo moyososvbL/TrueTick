@@ -17,7 +17,7 @@ from backend.app import cards
 from backend.app.analyzers.conversation import MAX_IMAGES, analyze_conversation
 from backend.app.analyzers.audio import BadAudioError, analyze_audio
 from backend.app.analyzers.files import analyze_file, check_file
-from backend.app.analyzers.image import BadImageError, analyze_image
+from backend.app.analyzers.image import BadImageError, analyze_image, analyze_qr_contents
 from backend.app.analyzers.text import analyze_text
 from backend.app.checks import site_visit
 from backend.app.checks.links import extract_urls
@@ -93,6 +93,17 @@ async def check_conversation(
     except BadImageError as e:
         raise HTTPException(400, str(e)) from e
     return reports.annotate(verdict, verdict.extracted_text)
+
+
+class QRRequest(BaseModel):
+    content: str = Field(min_length=1, max_length=4000)
+
+
+@app.post("/api/check/qr", response_model=Verdict)
+async def check_qr(req: QRRequest) -> Verdict:
+    """A QR code read live by the phone or laptop camera. Only its text is sent, never the camera image."""
+    verdict = await analyze_qr_contents([req.content.strip()])
+    return reports.annotate(verdict, req.content)
 
 
 class VisitRequest(BaseModel):

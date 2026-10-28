@@ -52,6 +52,8 @@ function route() {
     if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
   if (name !== "live" && live.running) stopLive();
+  if (name !== "scan") stopScan();
+  else if (!scan.stream) { scanMessage("Point your camera at the QR code. We read it without opening it."); $("scan-found").hidden = true; $("scan-box").classList.remove("found"); }
   if (name === "report") loadStandaloneReport();
   window.scrollTo({ top: 0 });
 }
@@ -86,6 +88,8 @@ function openPicker(kind) {
 document.addEventListener("click", (e) => {
   const p = e.target.closest("[data-pick]");
   if (p) { e.preventDefault(); openPicker(p.dataset.pick); }
+  const g = e.target.closest("[data-go]");
+  if (g) { e.preventDefault(); location.hash = "#/" + g.dataset.go; }
   const f = e.target.closest("[data-focus]");
   if (f) { e.preventDefault(); $("message").focus(); }
 });
@@ -199,7 +203,7 @@ function showResult(v) {
   const inside = v.extracted_text || "";
   $("r-text").hidden = !inside;
   $("r-text").open = false;
-  $("r-text-title").textContent = v.input_type === "audio" ? "What the voice note says" : v.input_type === "image" ? "Text we read from the image" : "What we found inside";
+  $("r-text-title").textContent = v.from_qr ? "What's inside the QR code" : v.input_type === "audio" ? "What the voice note says" : v.input_type === "image" ? "Text we read from the image" : "What we found inside";
   $("r-text-body").textContent = inside;
   const fixes = v.corrections || [];
   $("r-fixes").hidden = !fixes.length;
@@ -210,7 +214,8 @@ function showResult(v) {
   $("card-btn").hidden = !risky;
 
   $("r-visit").hidden = true;
-  if ((v.links || []).length && v.risk !== "low") visitSite(v.links[0]);
+  // Links from QR codes are always visited: the person can't see where a QR code leads.
+  if ((v.links || []).length && (v.risk !== "low" || v.from_qr)) visitSite(v.links[0]);
 
   location.hash = "#/result";
   if (location.hash === "#/result") route();
@@ -490,6 +495,119 @@ function stopLive() {
 
 $("live-start").addEventListener("click", startLive);
 $("live-stop").addEventListener("click", stopLive);
+
+/* ---------------- QR scanner ---------------- */
+// Reads QR codes from the camera on the device (BarcodeDetector where available, jsQR otherwise).
+// Only the decoded text is sent to TrueTick; camera frames never leave the device.
+const scan = { stream: null, timer: null, detector: null, busy: false, canvas: null };
+
+function loadJsQR() {
+  if (window.jsQR) return Promise.resolve();
+  return new Promise((ok, fail) => {
+    const s = document.createElement("script");
+    s.src = "vendor/jsQR.js"; s.onload = ok; s.onerror = fail;
+    document.head.appendChild(s);
+  });
+}
+
+function scanMessage(text, showStart = true) {
+  $("scan-msg").hidden = false;
+  $("scan-msg-text").textContent = text;
+  $("scan-start").hidden = !showStart;
+}
+
+async function startScan() {
+  $("scan-found").hidden = true;
+  $("scan-again").hidden = true;
+  $("scan-box").classList.remove("found");
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    scanMessage("This browser can't use the camera. Use a photo instead, or open TrueTick over a secure (https) link.", false);
+    return;
+  }
+  try {
+    scan.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+  } catch (_) {
+    scanMessage("We need the camera to scan. Allow it in your browser settings, or use a photo instead.");
+    return;
+  }
+  const video = $("scan-video");
+  video.srcObject = scan.stream;
+  await video.play().catch(() => {});
+  $("scan-msg").hidden = true;
+  if ("BarcodeDetector" in window) {
+    try { scan.detector = new BarcodeDetector({ formats: ["qr_code"] }); } catch (_) { scan.detector = null; }
+  }
+  if (!scan.detector) { try { await loadJsQR(); } catch (_) {} }
+  scan.canvas = scan.canvas || document.createElement("canvas");
+  scan.timer = setInterval(scanFrame, 180);
+}
+
+async function scanFrame() {
+  const video = $("scan-video");
+  if (scan.busy || !video.videoWidth) return;
+  scan.busy = true;
+  try {
+    let text = "";
+    if (scan.detector) {
+      const codes = await scan.detector.detect(video);
+      text = codes[0] ? codes[0].rawValue : "";
+    } else if (window.jsQR) {
+      const w = Math.min(640, video.videoWidth), h = Math.round(video.videoHeight * (w / video.videoWidth));
+      scan.canvas.width = w; scan.canvas.height = h;
+      const ctx = scan.canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(video, 0, 0, w, h);
+      const code = window.jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: "attemptBoth" });
+      text = code ? code.data : "";
+    }
+    if (text) onScanned(text);
+  } catch (_) {
+  } finally {
+    scan.busy = false;
+  }
+}
+
+function stopScan() {
+  clearInterval(scan.timer); scan.timer = null;
+  if (scan.stream) scan.stream.getTracks().forEach((t) => t.stop());
+  scan.stream = null;
+  const v = $("scan-video"); if (v) v.srcObject = null;
+}
+
+async function onScanned(text) {
+  stopScan();
+  if (navigator.vibrate) navigator.vibrate(80);
+  $("scan-box").classList.add("found");
+  $("scan-content").textContent = text;
+  $("scan-found").hidden = false;
+  scanMessage("Checking where this QR code leads…", false);
+  try {
+    const res = await fetch("/api/check/qr", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ content: text }) });
+    if (!res.ok) throw new Error();
+    showResult({ ...(await res.json()), from_qr: true });
+  } catch (_) {
+    scanMessage("We couldn't check this code right now. Please try again.");
+    $("scan-again").hidden = false;
+  }
+}
+
+$("scan-start").addEventListener("click", startScan);
+$("scan-again").addEventListener("click", startScan);
+$("scan-photo-btn").addEventListener("click", () => $("scan-photo").click());
+$("scan-photo").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  e.target.value = "";
+  if (!file) return;
+  stopScan();
+  scanMessage("Reading the QR code in your photo…", false);
+  const form = new FormData();
+  form.append("file", file);
+  try {
+    const v = await postForm("/api/check", form);
+    showResult({ ...v, from_qr: true });
+  } catch (err) {
+    scanMessage(err.message || "We couldn't read that photo. Try a clearer one.");
+  }
+});
 
 /* ---------------- start ---------------- */
 route();
