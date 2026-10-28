@@ -29,3 +29,4 @@ if __name__ == "__main__":
     save("chain", ui_art.chain("c"))
     save("flag", ui_art.flag("f"))
     save("mic", ui_art.mic("m"))
+    save("qr", ui_art.qr("q"))

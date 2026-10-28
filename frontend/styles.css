@@ -297,7 +297,7 @@ select, .input { height: 48px; border-radius: 12px; border: 1px solid var(--line
 
 /* QR scanner */
 .scan-card { padding: 16px; }
-.viewfinder { position: relative; aspect-ratio: 1 / 1; max-height: 520px; width: 100%; border-radius: 16px; overflow: hidden; background: #0b1020; }
+.viewfinder { position: relative; aspect-ratio: 1 / 1; max-height: 520px; width: 100%; border-radius: 16px; overflow: hidden; background: var(--blue-soft); }
 .viewfinder video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .viewfinder .corners { position: absolute; inset: 18%; pointer-events: none;
   background:
@@ -307,10 +307,11 @@ select, .input { height: 48px; border-radius: 12px; border: 1px solid var(--line
     linear-gradient(#fff, #fff) bottom right / 32px 4px no-repeat, linear-gradient(#fff, #fff) bottom right / 4px 32px no-repeat;
   border-radius: 12px; }
 .viewfinder.found .corners { filter: drop-shadow(0 0 0 #fff); background-color: rgba(37, 99, 255, .18); }
-.scan-msg { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center; color: #fff; background: #0b1020; }
-.scan-msg > .icon { width: 40px; height: 40px; color: #7ea6ff; }
-.scan-msg p { margin: 0; max-width: 300px; color: rgba(255, 255, 255, .8); }
-.scan-msg .btn-dark { background: #fff; color: #0b1020; }
+.scan-msg { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center;
+  background: linear-gradient(180deg, var(--surface) 0%, var(--blue-soft) 100%); }
+.scan-msg img { width: 148px; height: 148px; }
+.scan-msg p { margin: 0; max-width: 300px; color: var(--ink-2); }
+.scan-msg .btn { min-width: 200px; }
 .scan-found { margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: var(--bg); }
 .scan-found small { font: 700 13px var(--text); color: var(--ink-2); }
 .scan-found p { margin: 4px 0 0; overflow-wrap: anywhere; font-weight: 700; }

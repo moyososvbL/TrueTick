@@ -95,3 +95,20 @@ def mic(p="m", cls="obj"):
     holder += f'<path d="M-62 -6 a62 62 0 0 0 124 0" fill="none" stroke="url(#{p}a)" stroke-width="14" stroke-linecap="round"/>'
     stand = f'<rect x="-7" y="56" width="14" height="40" rx="7" fill="url(#{p}c)"/><ellipse cy="98" rx="44" ry="12" fill="url(#{p}c)"/><ellipse cy="94" rx="44" ry="12" fill="url(#{p}a)"/>'
     return f'<svg class="{cls}" viewBox="-120 -120 240 240">{grads(p)}<g transform="rotate(-12) translate(0 -4)">{stand}{holder}{body}</g></svg>'
+
+
+def qr(p="q", cls="obj"):
+    """A thick blue tile with a raised QR pattern (same tone-on-tone style as the other objects)."""
+    plate = 'x="-82" y="-82" width="164" height="164" rx="34"'
+    body = "".join(f'<rect {plate} fill="url(#{p}c)" transform="translate({k*1.3:.1f} {k*1.5:.1f})"/>' for k in range(10, 0, -1))
+    body += f'<rect {plate} fill="url(#{p}a)"/><rect x="-74" y="-76" width="148" height="60" rx="28" fill="url(#{p}b)" opacity=".7"/>'
+
+    def finder(x, y):
+        return (f'<rect x="{x}" y="{y}" width="40" height="40" rx="10" fill="none" stroke="#ffffff" stroke-width="9"/>'
+                f'<rect x="{x+12}" y="{y+12}" width="16" height="16" rx="4" fill="#ffffff"/>')
+    modules = finder(-58, -58) + finder(18, -58) + finder(-58, 18)
+    dots = [(26, 26), (46, 26), (26, 46), (46, 56), (36, 36), (56, 40), (-8, -48), (-8, -28), (-8, 0), (6, 10), (-30, -8), (-50, -8), (12, -12)]
+    modules += "".join(f'<rect x="{x-6}" y="{y-6}" width="12" height="12" rx="3" fill="#ffffff"/>' for x, y in dots)
+    shadow = f'<g transform="translate(2.5 3)" opacity=".35"><g fill="#132f9a" stroke="#132f9a">{modules}</g></g>'
+    return (f'<svg class="{cls}" viewBox="-120 -120 240 240">{grads(p)}'
+            f'<g transform="rotate(-10) scale(.92)">{body}{shadow}{modules}</g></svg>')
