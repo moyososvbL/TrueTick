@@ -28,6 +28,10 @@ def test_rules_catch_common_call_scams():
     assert "crypto" in ids("pay at the bitcoin ATM near you")
     assert "secrecy" in ids("don't tell anyone at the bank about this call")
     assert "threat" in ids("there is a warrant for your arrest")
+    assert "intimate_request" in ids("come on, take off your shirt for me")
+    assert "intimate_request" in ids("just send me nude pics")
+    assert "sextortion" in ids("pay or everyone will see this video")
+    assert "sextortion" in ids("I will send it to your family tonight")
 
 
 def test_rules_quiet_on_normal_call_and_stop_first():

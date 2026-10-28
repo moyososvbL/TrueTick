@@ -43,6 +43,14 @@ RULES: list[tuple[re.Pattern, LiveAlert]] = [
     (re.compile(r"\b(warrant|arrest(ed)?|police (will|are)|court case|deport(ed|ation)?|jail|fine (must|has to) be paid)\b", re.I),
      LiveAlert("threat", "warn", "They're threatening arrest or legal trouble",
                "Police and courts don't demand payment over the phone. Hang up and check with the agency directly.")),
+    (re.compile(r"\b(send (me )?(a |some |your )?(nudes?|naked|sexy|private) ?(pics?|pictures?|photos?|videos?)?|"
+                r"take off your (clothes|shirt|top|bra|dress)|show me your (body|breasts?|chest)|get naked|undress)\b", re.I),
+     LiveAlert("intimate_request", "stop", "They're asking you to undress or send intimate photos",
+               "Don't send or show anything. The person may not be who they appear to be. Hang up.")),
+    (re.compile(r"\b((i('ll| will)|we('ll| will)) (post|leak|share|send|upload) (your|the|this) (video|pictures?|photos?|nudes?)|"
+                r"everyone will see|send (it|this|them) to your (family|friends|followers|school|boss)|pay (me )?or (i|we|everyone))\b", re.I),
+     LiveAlert("sextortion", "stop", "They're threatening to share private images",
+               "Don't pay and stop replying. Keep the evidence and get help: stopncii.org (adults) or takeitdown.ncmec.org (under 18).")),
     (re.compile(r"\b(western union|money ?gram|wire (the|it|money)|bank transfer (now|today|immediately))\b", re.I),
      LiveAlert("wire", "warn", "They're pushing an urgent transfer",
                "Pause. Verify who this is through a number you already know before sending anything.")),
