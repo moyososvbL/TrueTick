@@ -21,3 +21,9 @@ Thumbs.db
 
 # Local database (community reports)
 data/
+
+# Android app build output
+mobile/node_modules/
+mobile/android/
+mobile/capacitor.config.json
+mobile/TrueTick.apk

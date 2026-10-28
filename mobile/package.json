@@ -1,0 +1,13 @@
+{
+  "name": "truetick-android",
+  "private": true,
+  "description": "TrueTick Android app (Capacitor shell around the TrueTick web app). Built by .github/workflows/android-apk.yml.",
+  "dependencies": {
+    "@capacitor/android": "7.6.10",
+    "@capacitor/core": "7.6.10"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "7.6.10"
+  }
+}

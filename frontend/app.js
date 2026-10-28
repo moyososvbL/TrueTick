@@ -609,5 +609,10 @@ $("scan-photo").addEventListener("change", async (e) => {
   }
 });
 
+/* ---------------- inside the Android app ---------------- */
+if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+  document.documentElement.classList.add("in-app");
+}
+
 /* ---------------- start ---------------- */
 route();

@@ -519,3 +519,6 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
   will-change: transform;
 }
 .m-hello img { animation-duration: 6s; }
+
+/* inside the Android app: no 'get the app' prompts */
+.in-app .get-app, .in-app .app-band { display: none !important; }
