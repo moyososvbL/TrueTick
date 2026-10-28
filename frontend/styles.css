@@ -506,3 +506,16 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
 .person.glass small { color: rgba(255, 255, 255, .75); }
 .person.glass .send { background: rgba(255, 255, 255, .92); }
 @media (max-width: 767px) { .m-shape { width: 220px; height: 220px; right: -60px; } .w-shape { width: 260px; height: 260px; } }
+
+/* the guard coin turns gently in 3D and floats (keeps its look; stops for reduced-motion users) */
+@keyframes coin-sway {
+  0%   { transform: perspective(900px) rotateY(-20deg) rotateX(4deg) translateY(0); }
+  50%  { transform: perspective(900px) rotateY(20deg) rotateX(-2deg) translateY(-10px); }
+  100% { transform: perspective(900px) rotateY(-20deg) rotateX(4deg) translateY(0); }
+}
+.stage .coin, .m-hello img {
+  animation: coin-sway 7s cubic-bezier(.45, 0, .55, 1) infinite;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.m-hello img { animation-duration: 6s; }
