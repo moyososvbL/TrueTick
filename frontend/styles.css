@@ -189,3 +189,11 @@ input[type="file"] {
 #timeline li { margin: 6px 0; }
 .visit-image { width: 100%; max-width: 320px; max-height: 560px; object-fit: cover; object-position: top;
   border-radius: 18px; border: 6px solid #1b1f1d; display: block; margin: 8px 0; }
+
+.live-status { color: var(--muted); display: flex; align-items: center; gap: 10px; }
+.rec-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--high); flex: none;
+  animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+#live-transcript { font-size: 1.05rem; }
+#live-transcript mark { background: var(--medium-bg); color: inherit; border-radius: 4px; padding: 0 2px; }
+@media (prefers-reduced-motion: reduce) { .rec-dot { animation: none; } }

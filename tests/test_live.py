@@ -21,6 +21,7 @@ def ids(text):
 def test_rules_catch_common_call_scams():
     assert "secret_code" in ids("Please read me the code we just sent to your phone")
     assert "secret_code" in ids("I need the oh tee pee to stop the transfer")
+    assert "secret_code" in ids("tell me the six digit number, the six digit code")
     assert "gift_card" in ids("go to the store and buy an items card")
     assert "safe_account" in ids("we will move your money to a safe account")
     assert "remote_access" in ids("download AnyDesk so I can help you")

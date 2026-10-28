@@ -131,7 +131,7 @@
         <button type="button" id="live-start" class="primary">Start Live Call Guard</button>
         <button type="button" id="live-stop" class="ghost" hidden>Stop</button>
       </div>
-      <p id="live-status" class="muted" hidden></p>
+      <p id="live-status" class="live-status" hidden><span class="rec-dot" id="rec-dot" hidden></span><span id="live-status-text"></span></p>
       <div id="live-alert" class="live-alert" hidden role="alert">
         <p class="live-alert-title" id="live-alert-title"></p>
         <p id="live-alert-advice"></p>
@@ -141,8 +141,8 @@
         <p id="live-type" class="scam-type"></p>
         <p id="live-summary" class="summary"></p>
       </div>
-      <details id="live-transcript-block" hidden>
-        <summary>What we heard</summary>
+      <details id="live-transcript-block" open hidden>
+        <summary>What we're hearing (live)</summary>
         <p id="live-transcript" class="extracted"></p>
       </details>
     </section>

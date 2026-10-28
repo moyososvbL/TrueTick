@@ -284,9 +284,26 @@ $("card-share-btn").addEventListener("click", async () => {
 const LIVE_PIECE_MS = 5000;
 const live = { stream: null, recorder: null, transcript: "", running: false, pieces: 0, shown: new Set(), assessing: false };
 
-function liveStatus(text) {
-  $("live-status").textContent = text;
+function liveStatus(text, recording = false) {
+  $("live-status-text").textContent = text;
+  $("rec-dot").hidden = !recording;
   $("live-status").hidden = !text;
+}
+
+function renderTranscript(latest) {
+  // Earlier words plain, the newest piece highlighted, so viewers can follow along.
+  const before = live.transcript.slice(0, live.transcript.length - latest.length).trim();
+  const mark = document.createElement("mark");
+  mark.textContent = latest;
+  $("live-transcript").replaceChildren(document.createTextNode(before ? before + " " : ""), mark);
+  $("live-transcript-block").hidden = false;
+}
+
+async function keepScreenOn(on) {
+  try {
+    if (on && "wakeLock" in navigator) live.wake = await navigator.wakeLock.request("screen");
+    else if (!on && live.wake) { await live.wake.release(); live.wake = null; }
+  } catch (_) {}
 }
 
 function showLiveAlert(a) {
@@ -332,8 +349,7 @@ async function sendPiece(blob) {
     const body = await res.json();
     if (body.text) {
       live.transcript = `${live.transcript} ${body.text}`.trim();
-      $("live-transcript").textContent = live.transcript;
-      $("live-transcript-block").hidden = false;
+      renderTranscript(body.text);
     }
     (body.alerts || []).forEach(showLiveAlert);
     live.pieces += 1;
@@ -374,7 +390,8 @@ async function startLive() {
   ["live-alert", "live-verdict", "live-transcript-block"].forEach((id) => ($(id).hidden = true));
   $("live-start").hidden = true;
   $("live-stop").hidden = false;
-  liveStatus("🎧 Listening… keep the call on speaker, near this device.");
+  liveStatus("Listening… keep the call on speaker, near this device.", true);
+  keepScreenOn(true);
   recordPiece();
 }
 
@@ -384,6 +401,7 @@ function stopLive() {
   if (live.stream) live.stream.getTracks().forEach((t) => t.stop());
   $("live-start").hidden = false;
   $("live-stop").hidden = true;
+  keepScreenOn(false);
   liveStatus(live.transcript ? "Stopped. Here's what we found." : "Stopped.");
   setTimeout(liveAssess, 800);
 }

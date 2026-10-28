@@ -18,7 +18,7 @@ class LiveAlert:
 
 
 RULES: list[tuple[re.Pattern, LiveAlert]] = [
-    (re.compile(r"\b(o\.?\s?t\.?\s?p|oh tee pee|one[- ]time (pass)?code|verification code|6[- ]digit code|"
+    (re.compile(r"\b(o\.?\s?t\.?\s?p|oh tee pee|one[- ]time (pass)?code|verification code|(6|six|4|four)[- ]digit (code|pin)|"
                 r"code (we|i) (just )?sent|read (me )?the code|pin|cvv|cvc|security code|password)\b", re.I),
      LiveAlert("secret_code", "stop", "They're asking for a code, PIN or password",
                "No bank, company or government ever asks for these. Hang up now.")),
