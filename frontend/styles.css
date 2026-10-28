@@ -309,9 +309,9 @@ select, .input { height: 48px; border-radius: 12px; border: 1px solid var(--line
 .viewfinder.found .corners { filter: drop-shadow(0 0 0 #fff); background-color: rgba(37, 99, 255, .18); }
 .scan-msg { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center;
   background: linear-gradient(180deg, var(--surface) 0%, var(--blue-soft) 100%); }
-.scan-msg img { width: 148px; height: 148px; }
+.scan-msg img { width: 88px; height: 88px; margin-bottom: 4px; }
 .scan-msg p { margin: 0; max-width: 300px; color: var(--ink-2); }
-.scan-msg .btn { min-width: 200px; }
+.scan-msg .btn { min-width: 180px; }
 .scan-found { margin-top: 16px; padding: 14px 16px; border-radius: 16px; background: var(--bg); }
 .scan-found small { font: 700 13px var(--text); color: var(--ink-2); }
 .scan-found p { margin: 4px 0 0; overflow-wrap: anywhere; font-weight: 700; }
