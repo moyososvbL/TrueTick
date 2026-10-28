@@ -480,3 +480,29 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
   .privacy-band img { width: 96px; height: 96px; }
   .app-band { padding: 24px; margin-bottom: 40px; } .app-band img { display: none; }
 }
+
+/* subtle glass, only where there's colour and shape behind it */
+.m-shape, .w-shape { position: absolute; color: rgba(255, 255, 255, .14); pointer-events: none; }
+.m-shape { width: 300px; height: 300px; right: -70px; bottom: 10px; }
+.w-shape { width: 360px; height: 360px; left: -80px; top: -60px; }
+.m-card > *:not(.m-shape), .wide-card > *:not(.w-shape) { position: relative; }
+.ui.glass {
+  background: rgba(255, 255, 255, .14); color: #fff; border: 1px solid rgba(255, 255, 255, .35); border-bottom: 0;
+  -webkit-backdrop-filter: blur(18px) saturate(1.3); backdrop-filter: blur(18px) saturate(1.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 -8px 32px rgba(10, 30, 120, .18);
+}
+.ui.glass .ui-live { color: #fff; }
+.ui.glass .ui-time { color: rgba(255, 255, 255, .7); }
+.ui.glass .ui-line mark { background: rgba(255, 255, 255, .22); }
+.ui.glass .ui-alert { background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .22); }
+.ui.glass .ui-alert .icon { color: #fff; }
+.ui.glass .bars b { background: #fff; }
+:root[data-theme="dark"] .ui.glass { background: rgba(255, 255, 255, .10); color: #fff; }
+.person.glass {
+  background: rgba(255, 255, 255, .18); color: #fff; border: 1px solid rgba(255, 255, 255, .32);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3); backdrop-filter: blur(16px) saturate(1.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.person.glass small { color: rgba(255, 255, 255, .75); }
+.person.glass .send { background: rgba(255, 255, 255, .92); }
+@media (max-width: 767px) { .m-shape { width: 220px; height: 220px; right: -60px; } .w-shape { width: 260px; height: 260px; } }
