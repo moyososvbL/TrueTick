@@ -42,6 +42,39 @@ async def health():
     return {"status": "ok", "model": s.text_model, "ai_configured": bool(s.meta_api_key)}
 
 
+@app.get("/api/health/models")
+async def health_models():
+    """Diagnostics: which models this server's Meta key can use. Never returns the key."""
+    import httpx
+    from backend.app.ai import meta_client
+    s = get_settings()
+    if not s.meta_api_key:
+        return {"ai_configured": False}
+    base = s.meta_api_base_url.rstrip("/")
+    headers = {"Authorization": f"Bearer {s.meta_api_key}"}
+    out: dict = {"ai_configured": True, "configured_model": s.text_model}
+    async with httpx.AsyncClient(timeout=30) as client:
+        try:
+            r = await client.get(f"{base}/models", headers=headers)
+            out["models_status"] = r.status_code
+            try:
+                out["models"] = [m.get("id") for m in r.json().get("data", [])]
+            except Exception:  # noqa: BLE001
+                out["models_body"] = r.text[:300]
+        except httpx.HTTPError as e:
+            out["models_error"] = e.__class__.__name__
+        tests = {}
+        for name in dict.fromkeys([s.text_model] + meta_client.SPARK_FALLBACKS):
+            try:
+                r = await client.post(f"{base}/chat/completions", headers=headers,
+                                      json={"model": name, "messages": [{"role": "user", "content": "Say ok"}]})
+                tests[name] = r.status_code if r.status_code < 400 else f"{r.status_code}: {r.text[:160]}"
+            except httpx.HTTPError as e:
+                tests[name] = e.__class__.__name__
+        out["chat_test"] = tests
+    return out
+
+
 @app.post("/api/check/text", response_model=Verdict)
 async def check_text(req: CheckTextRequest) -> Verdict:
     # Privacy: we never log or store the message itself.
