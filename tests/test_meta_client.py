@@ -99,3 +99,30 @@ def test_respond_error_is_readable():
 
     with pytest.raises(meta_client.MetaAPIError, match="restricted"):
         asyncio.run(meta_client.respond("sam-3.1", [], transport=httpx.MockTransport(handler)))
+
+
+def test_chat_steps_down_when_model_missing(monkeypatch):
+    import asyncio
+    import httpx
+    from backend.app.ai import meta_client
+    from backend.app.config import get_settings
+    monkeypatch.setenv("META_API_KEY", "test")
+    monkeypatch.setenv("TEXT_MODEL", "muse-spark-1.3")
+    get_settings.cache_clear()
+    meta_client._working_model.clear()
+    tried = []
+
+    def handler(request):
+        import json as _j
+        model = _j.loads(request.content)["model"]
+        tried.append(model)
+        if model == "muse-spark-1.1":
+            return httpx.Response(200, json={"choices": [{"message": {"content": "ok"}}]})
+        return httpx.Response(404, json={"error": {"code": "model_not_found"}})
+
+    out = asyncio.run(meta_client.chat([{"role": "user", "content": "hi"}], transport=httpx.MockTransport(handler)))
+    assert out == "ok"
+    assert tried == ["muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1"]
+    assert all("contributor" not in m for m in tried)
+    meta_client._working_model.clear()
+    get_settings.cache_clear()

@@ -36,6 +36,24 @@ def _base_and_headers() -> tuple[str, dict]:
     return s.meta_api_base_url.rstrip("/"), {"Authorization": f"Bearer {s.meta_api_key}"}
 
 
+# If an account can't use the configured Muse Spark version, step down to an older one.
+# (Never the "-contributor" models.)
+SPARK_FALLBACKS = ["muse-spark-1.3", "muse-spark-1.2", "muse-spark-1.1"]
+_working_model: dict[str, str] = {}
+
+
+def _candidates(model: str) -> list[str]:
+    if model in _working_model:
+        return [_working_model[model]]
+    if not model.startswith("muse-spark"):
+        return [model]
+    return list(dict.fromkeys([model] + SPARK_FALLBACKS))
+
+
+def _model_missing(status: int, body: str) -> bool:
+    return status == 404 and "model_not_found" in body
+
+
 def _fail(status: int, body: str) -> MetaAPIError:
     hint = _HINTS.get(status, "Unexpected error from the Meta Model API.")
     return MetaAPIError(f"{hint} (HTTP {status}: {body[:300]})")
@@ -49,12 +67,18 @@ async def chat(
 ) -> str:
     """Send a conversation to Muse Spark and return the reply text."""
     base, headers = _base_and_headers()
-    payload = {"model": model or get_settings().text_model, "messages": messages, "temperature": temperature}
+    wanted = model or get_settings().text_model
     async with httpx.AsyncClient(timeout=60, transport=transport) as client:
-        try:
-            r = await client.post(f"{base}/chat/completions", json=payload, headers=headers)
-        except httpx.HTTPError as e:
-            raise MetaAPIError(f"Couldn't reach the Meta Model API ({e.__class__.__name__}). Check your internet.") from e
+        for name in _candidates(wanted):
+            payload = {"model": name, "messages": messages, "temperature": temperature}
+            try:
+                r = await client.post(f"{base}/chat/completions", json=payload, headers=headers)
+            except httpx.HTTPError as e:
+                raise MetaAPIError(f"Couldn't reach the Meta Model API ({e.__class__.__name__}). Check your internet.") from e
+            if not _model_missing(r.status_code, r.text):
+                if r.status_code < 400:
+                    _working_model[wanted] = name
+                break
     if r.status_code >= 400:
         raise _fail(r.status_code, r.text)
     try:
@@ -96,20 +120,42 @@ async def respond(
     """
     base, headers = _base_and_headers()
     headers = {**headers, "Accept": "text/event-stream"}
-    payload: dict = {
-        "model": model,
-        "input": [{"type": "message", "role": "user", "content": content}],
-        "stream": True,
-    }
-    if metadata:
-        payload["metadata"] = metadata
+    names = _candidates(model)
+    for i, name in enumerate(names):
+        payload: dict = {
+            "model": name,
+            "input": [{"type": "message", "role": "user", "content": content}],
+            "stream": True,
+        }
+        if metadata:
+            payload["metadata"] = metadata
+        try:
+            events = await _stream_response(base, headers, payload, transport)
+        except _ModelMissing as e:
+            if i == len(names) - 1:
+                raise _fail(404, str(e)) from None
+            continue
+        if name != model:
+            _working_model[model] = name
+        return events
+    return []
 
+
+class _ModelMissing(Exception):
+    pass
+
+
+async def _stream_response(base: str, headers: dict, payload: dict,
+                           transport: httpx.AsyncBaseTransport | None) -> list[dict]:
     events: list[dict] = []
     async with httpx.AsyncClient(timeout=180, transport=transport) as client:
         try:
             async with client.stream("POST", f"{base}/responses", json=payload, headers=headers) as r:
                 if r.status_code >= 400:
-                    raise _fail(r.status_code, (await r.aread()).decode(errors="replace"))
+                    body = (await r.aread()).decode(errors="replace")
+                    if _model_missing(r.status_code, body):
+                        raise _ModelMissing(body)
+                    raise _fail(r.status_code, body)
                 async for line in r.aiter_lines():
                     if not line.startswith("data: "):
                         continue
