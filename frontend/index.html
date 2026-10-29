@@ -454,6 +454,28 @@
 </nav>
 
 <!-- sheets -->
+<div class="sheet-backdrop" id="sheet-voice" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sv-title">
+    <div class="sheet-head"><h2 id="sv-title">Voice note</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+    <div id="sv-choose">
+      <p class="muted" style="margin:0 0 16px">Say what happened in your own words, or pick a recording you saved.</p>
+      <div class="voice-options">
+        <button class="voice-option" id="sv-record" type="button"><span class="tile-icon"><svg class="icon"><use href="#i-mic"/></svg></span><span><b>Record now</b><small>Tell us who contacted you and what they asked for</small></span></button>
+        <button class="voice-option" id="sv-file" type="button"><span class="tile-icon"><svg class="icon"><use href="#i-file"/></svg></span><span><b>Choose a file</b><small>A voice note saved from WhatsApp or another app</small></span></button>
+      </div>
+    </div>
+    <div id="sv-recording" hidden>
+      <div class="rec-panel">
+        <div class="listening"><span class="bars"><b></b><b></b><b></b><b></b></span><span>Listening</span></div>
+        <p class="rec-time" id="sv-time">0:00</p>
+        <p class="muted" style="margin:0">Speak close to your phone. Tap Done when you've finished.</p>
+      </div>
+      <button class="btn btn-blue" id="sv-done" type="button" style="width:100%;margin-top:16px">Done</button>
+      <button class="btn btn-ghost" id="sv-cancel" type="button" style="width:100%;margin-top:10px">Cancel</button>
+    </div>
+    <p class="form-error" id="sv-error" hidden></p>
+  </div>
+</div>
 <div class="sheet-backdrop" id="sheet-report" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sr-title">
     <div class="sheet-head"><h2 id="sr-title">Report this scam</h2><button class="icon-btn" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>

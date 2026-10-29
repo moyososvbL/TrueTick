@@ -272,6 +272,15 @@ select, .input { height: 48px; border-radius: 12px; border: 1px solid var(--line
 .links-list { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 8px; }
 .links-list a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); text-decoration: none; font-weight: 700; }
 .links-list a .icon { color: var(--blue); }
+.voice-options { display: grid; gap: 10px; }
+.voice-option { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; cursor: pointer; }
+.voice-option:hover { border-color: var(--blue); }
+.voice-option .tile-icon { flex: none; width: 44px; height: 44px; border-radius: 12px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; }
+.voice-option b { display: block; font: 700 16px/20px var(--heading); }
+.voice-option small { display: block; margin-top: 2px; color: var(--ink-2); font-size: 14px; line-height: 20px; }
+.rec-panel { text-align: center; padding: 24px 16px; border-radius: 16px; background: var(--blue-soft); }
+.rec-panel .listening { margin-top: 0; }
+.rec-time { margin: 8px 0 6px; font: 700 40px/44px var(--heading); letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .card-preview { width: 100%; border-radius: 16px; border: 1px solid var(--line); }
 
 /* live call guard */

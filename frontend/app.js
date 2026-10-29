@@ -83,8 +83,81 @@ $("files").addEventListener("click", (e) => {
 
 function openPicker(kind) {
   if (location.hash && location.hash !== "#/") location.hash = "#/";
+  if (kind === "audio") { openVoiceSheet(); return; }
   $(`pick-${kind}`).click();
 }
+
+/* ---------------- voice note: record now or choose a file ---------------- */
+const voice = { stream: null, recorder: null, parts: [], started: 0, timer: null, keep: false };
+const VOICE_MAX_MS = 3 * 60 * 1000;
+
+function voiceStep(recording) {
+  $("sv-choose").hidden = recording;
+  $("sv-recording").hidden = !recording;
+}
+function voiceError(msg) { $("sv-error").textContent = msg; $("sv-error").hidden = !msg; }
+
+function openVoiceSheet() {
+  voiceStep(false); voiceError("");
+  openSheet("sheet-voice");
+}
+
+function stopVoice(keep) {
+  voice.keep = keep;
+  clearInterval(voice.timer);
+  if (voice.recorder && voice.recorder.state === "recording") voice.recorder.stop();
+  else releaseVoice();
+}
+function releaseVoice() {
+  if (voice.stream) voice.stream.getTracks().forEach((t) => t.stop());
+  voice.stream = null; voice.recorder = null;
+}
+
+async function startVoice() {
+  voiceError(""); voice.keep = false;
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    voiceError("This browser can't record. Choose a saved voice note instead.");
+    return;
+  }
+  try {
+    voice.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+  } catch {
+    voiceError("We couldn't use the microphone. Allow it in your browser settings, then try again.");
+    return;
+  }
+  const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"].find(
+    (t) => MediaRecorder.isTypeSupported(t));
+  const rec = new MediaRecorder(voice.stream, type ? { mimeType: type } : undefined);
+  voice.parts = []; voice.recorder = rec;
+  rec.ondataavailable = (e) => e.data && e.data.size && voice.parts.push(e.data);
+  rec.onstop = () => {
+    const mime = (rec.mimeType || "audio/webm").split(";")[0];
+    releaseVoice();
+    if (!voice.keep) return;
+    const blob = new Blob(voice.parts, { type: mime });
+    if (blob.size < 2000) { voiceStep(false); voiceError("That was too short. Try again and speak for a few seconds."); return; }
+    const ext = mime.includes("mp4") ? "m4a" : mime.includes("ogg") ? "ogg" : "webm";
+    picked = [new File([blob], `voice-note.${ext}`, { type: mime })];
+    renderFiles(); hideError(); closeSheets();
+    $("check-btn").focus();
+  };
+  rec.start(1000);
+  voice.started = Date.now();
+  $("sv-time").textContent = "0:00";
+  voice.timer = setInterval(() => {
+    const ms = Date.now() - voice.started;
+    const sec = Math.floor(ms / 1000);
+    $("sv-time").textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+    if (ms >= VOICE_MAX_MS) stopVoice(true);
+  }, 250);
+  voiceStep(true);
+  $("sv-done").focus();
+}
+
+$("sv-record").addEventListener("click", startVoice);
+$("sv-file").addEventListener("click", () => { closeSheets(); $("pick-audio").click(); });
+$("sv-done").addEventListener("click", () => stopVoice(true));
+$("sv-cancel").addEventListener("click", () => { stopVoice(false); voiceStep(false); });
 document.addEventListener("click", (e) => {
   const p = e.target.closest("[data-pick]");
   if (p) { e.preventDefault(); openPicker(p.dataset.pick); }
@@ -274,7 +347,10 @@ $("share-btn").addEventListener("click", async () => {
 
 /* ---------------- sheets ---------------- */
 function openSheet(id) { $(id).hidden = false; $(id).querySelector("[data-close]").focus(); }
-function closeSheets() { document.querySelectorAll(".sheet-backdrop").forEach((s) => (s.hidden = true)); }
+function closeSheets() {
+  if (typeof voice !== "undefined" && voice.recorder && voice.recorder.state === "recording" && !voice.keep) stopVoice(false);
+  document.querySelectorAll(".sheet-backdrop").forEach((s) => (s.hidden = true));
+}
 document.querySelectorAll(".sheet-backdrop").forEach((s) =>
   s.addEventListener("click", (e) => { if (e.target === s || e.target.closest("[data-close]")) closeSheets(); }));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSheets(); });
