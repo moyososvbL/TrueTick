@@ -23,6 +23,7 @@ The idea came from a real call: a "bank officer" who already knew my name and ac
 | **Voice notes** | Muse Voice Transcribe turns the recording into words (fixing common mishearings like "items card" → iTunes card), then it's checked like a message. |
 | **Live Call Guard** | Put a call on speaker next to a second device. Every few seconds the call is transcribed; if the caller asks for a code, PIN, gift card, crypto, a "safe account" transfer or remote access, a warning appears instantly, with a running verdict from Muse Spark. |
 | **"We visited the website for you"** | Suspicious links are opened in a sealed, throwaway browser on our side. Muse Spark looks at the page and says which brand it's dressed up as, then TrueTick compares that with the real web address. |
+| **Before you sign (crypto)** | Paste a wallet signing request, transaction data or a "verify your wallet" message. Without AI, TrueTick decodes what it really does: unlimited token approvals, "approve all" for NFTs, gasless Permit / Permit2 signatures, marketplace listings that give items away, EIP-7702 delegations that hand over the whole wallet, and blind signing. It also catches recovery phrases and private keys pasted by mistake. Muse Spark then explains it in plain words. |
 | **QR scanner** | Scan with the camera or a photo. The code is read on your device without being opened; Wi-Fi, payment, crypto, app-install and web QR codes are each checked. |
 | **Non-AI checks** | Lookalike letters (`rnicrosoft` → Microsoft), risky domain endings, link shorteners, `@` tricks, brand-new websites, redirects, dangerous files (`.apk`, double extensions). These still work if the AI is unreachable. |
 | **Family warning card** | Muse Image draws a warning card about the scam to share with family. |
@@ -105,7 +106,7 @@ Open the `https://….trycloudflare.com` address it prints, then use **Add to Ho
 python -m pytest
 ```
 
-112 automated tests cover the analyzers, link and lookalike checks, QR handling, Live Call Guard rules, the Meta client, the API, and attacks on TrueTick itself.
+126 automated tests cover the analyzers, link and lookalike checks, QR handling, Live Call Guard rules, the Meta client, the API, wallet-request decoding, and attacks on TrueTick itself.
 
 Accuracy scripts (need a key): `python scripts/evaluate.py` runs the labelled messages in `samples/test_cases.csv`; `python scripts/evaluate_links.py` checks live phishing links from the public OpenPhish feed. `samples/test_images/` holds fictional test screenshots.
 

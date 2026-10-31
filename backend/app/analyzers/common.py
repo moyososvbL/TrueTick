@@ -39,6 +39,13 @@ def verdict_from_model(data: dict) -> Verdict:
     )
 
 
+CRYPTO_ADVICE = [
+    "Don't sign it. Close the page or chat that sent it",
+    "If you already signed, remove the permission now (for example at revoke.cash) and move your funds to a new wallet",
+    "Never type your recovery phrase or private key anywhere. Real support will never ask for it",
+]
+
+
 def apply_findings(v: Verdict, findings: list[Finding]) -> Verdict:
     """Hard facts from non-AI checks can raise the risk but never lower it."""
     v.findings = findings
@@ -49,6 +56,8 @@ def apply_findings(v: Verdict, findings: list[Finding]) -> Verdict:
             v.summary = "The links or names in this message show clear warning signs."
     if v.is_threat:
         v.advice = list(dict.fromkeys(v.advice + THREAT_ADVICE))
+    if any(f.kind == "crypto" for f in findings):
+        v.advice = list(dict.fromkeys(CRYPTO_ADVICE + v.advice))
     return v
 
 
@@ -56,7 +65,7 @@ def fallback_verdict(findings: list[Finding], reason: str) -> Verdict:
     """Used when Muse Spark can't be reached: report only what the non-AI checks found."""
     v = Verdict(
         risk="unknown",
-        summary=f"Our AI check isn't available right now ({reason}). Here's what our link checks found.",
+        summary=f"Our AI check isn't available right now ({reason}). Here's what our automatic checks found.",
         advice=["Don't send money, codes or card details until you've verified who this is."],
     )
     v = apply_findings(v, findings)

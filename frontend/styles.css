@@ -365,7 +365,7 @@ footer.foot .wrap { display: flex; flex-wrap: wrap; justify-content: space-betwe
   .attach .pill { justify-content: center; height: 40px; padding: 0 10px; }
   .check-row .privacy { display: none; }
   .check-row .btn { width: 100%; }
-  .examples { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); }
+  .examples { margin-top: 12px; display: grid; grid-template-columns: repeat(2, 1fr); }
   .examples > span { grid-column: 1 / -1; }
   .examples button { padding: 0 6px; }
   .page { padding-bottom: 120px; }

@@ -14,6 +14,7 @@ const EXAMPLES = [
   "Zenora Bank: your account has been suspended due to unusual activity. Verify your identity within 24 hours at http://rnicrosoft-secure-login.top/verify or it will be closed.",
   "Hi sweetie, I can't video call because we're offshore on the rig for security reasons. My daughter is in hospital and the doctor needs a $3,000 deposit. Please, you're the only one I trust.",
   "Congratulations! You've been selected for a remote job: earn $500 a day liking videos. Pay a $30 registration fee to start today.",
+  "Binance Support: after the recent security incident, every user must re-verify their wallet to receive compensation. Sign this request in your wallet within 24 hours: {\"primaryType\":\"PermitSingle\",\"domain\":{\"name\":\"Permit2\",\"chainId\":1},\"message\":{\"details\":{\"token\":\"0xdAC17F958D2ee523a2206206994597C13D831ec7\",\"amount\":\"1461501637330902918203684832716283019655932542975\",\"expiration\":\"281474976710655\"},\"spender\":\"0x7f3a9c1e5b2d4f6a8c0e1b3d5f7a9c2e4b6d8f0a\"}}",
 ];
 
 const store = {
