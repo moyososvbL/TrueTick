@@ -24,6 +24,7 @@ import httpx
 
 from backend.app.checks.lookalike import BRANDS, is_official
 from backend.app.config import get_settings
+from backend.app.checks.injection import check_injection
 from backend.app.models import Finding
 
 MAX_LINKS = 3
@@ -178,6 +179,9 @@ async def inspect_url(url: str, transport: httpx.AsyncBaseTransport | None = Non
                 asks.add("a password")
             page_words = re.sub(r"[^a-z]", "", (title + " " + " ".join(reader.text_parts[:200])).lower())
             claimed = [name for brand, (name, _) in BRANDS.items() if brand in page_words]
+            # Hidden text aimed at AI checkers (HTML comments, invisible elements count too).
+            for f in check_injection(body.decode("utf-8", errors="replace")[:200_000], "web page"):
+                findings.append(f)
 
         age = await _domain_age_days(client, final_host) if not official else None
         young = age is not None and age < 180

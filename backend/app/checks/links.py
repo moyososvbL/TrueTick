@@ -13,6 +13,7 @@ from backend.app.checks.lookalike import (
 )
 from backend.app.analyzers.files import DANGEROUS_EXT
 from backend.app.forensics.dates import weekday_mismatches
+from backend.app.checks.injection import check_injection
 from backend.app.models import Finding
 
 URL_RE = re.compile(
@@ -97,6 +98,7 @@ def run_checks(text: str) -> list[Finding]:
         without_urls = without_urls.replace(url, " ")
     findings.extend(Finding(kind="lookalike", severity="high", message=m) for m in check_text_lookalikes(without_urls))
     findings.extend(Finding(kind="receipt", severity="high", message=m) for m in weekday_mismatches(text))
+    findings.extend(check_injection(text))
     seen, unique = set(), []
     for f in findings:
         if f.message not in seen:

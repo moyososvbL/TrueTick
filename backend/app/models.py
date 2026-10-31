@@ -11,7 +11,7 @@ RISK_ORDER = {"unknown": 0, "low": 1, "medium": 2, "high": 3}
 class Finding(BaseModel):
     """A fact found by a non-AI check (links, lookalike letters, QR codes, files...)."""
 
-    kind: Literal["link", "lookalike", "qr", "file", "community", "receipt", "site", "conversation"]
+    kind: Literal["link", "lookalike", "qr", "file", "community", "receipt", "site", "conversation", "injection"]
     severity: Literal["high", "medium"]
     message: str
 
