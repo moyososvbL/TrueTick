@@ -89,3 +89,20 @@ def test_fooled_ai_still_warns(monkeypatch):
            + json.dumps({"to": USDT, "data": "0x095ea7b3" + "0" * 24 + THIEF + MAX}))
     v = TestClient(app).post("/api/check/text", json={"text": msg}).json()
     assert v["risk"] == "high" and any(f["kind"] == "crypto" for f in v["findings"])
+
+
+@pytest.mark.parametrize("text", [
+    "Trust Wallet Support: to fix the sync error, reply with your 12 words: "
+    "apple river stone cloud orange paper lion music forest window tiger glass",
+    "Sign this message to verify ownership: 0x" + "8f2b1c4d" * 8,
+])
+def test_caught_inside_a_sentence(text):
+    assert one(text).severity == "high"
+
+
+@pytest.mark.parametrize("text", [
+    "I went to the market this morning and bought some rice, beans, and two fresh fish for dinner tonight.",
+    "Your transfer is complete. Transaction 0x" + "8f2b1c4d" * 8 + " was confirmed on the blockchain.",
+])
+def test_ordinary_sentences_stay_clean(text):
+    assert check_signing_request(text) == []

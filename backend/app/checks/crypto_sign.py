@@ -17,6 +17,7 @@ It also catches recovery phrases and private keys pasted by mistake.
 
 import json
 import re
+from pathlib import Path
 
 from backend.app.models import Finding
 
@@ -218,10 +219,17 @@ def _json_objects(text: str) -> list[dict]:
     return found
 
 
+# The official BIP-39 English word list (2048 words) used by almost every wallet's recovery phrase.
+# Source: bitcoin/bips BIP-0039, via python-mnemonic (MIT).
+_BIP39 = set((Path(__file__).with_name("bip39_english.txt")).read_text().split())
+
+
 def _looks_like_recovery_phrase(text: str) -> bool:
-    for chunk in re.split(r"[\n,;]+|\s{2,}", text.strip()) + [text.strip()]:
-        words = chunk.split()
-        if len(words) in (12, 15, 18, 21, 24) and all(re.fullmatch(r"[a-z]{3,8}", w) for w in words):
+    """12+ wallet words in a row, even inside a longer message."""
+    run = 0
+    for word in re.findall(r"[A-Za-z]+", text):
+        run = run + 1 if word.lower() in _BIP39 else 0
+        if run >= 12:
             return True
     return False
 
@@ -254,7 +262,8 @@ def check_signing_request(text: str) -> list[Finding]:
             if findings:
                 break
     stripped = text.strip()
-    if re.fullmatch(r"0x[0-9a-fA-F]{64}", stripped):
+    bare_hash = re.search(r"(?<![0-9a-fA-Fx])0x[0-9a-fA-F]{64}(?![0-9a-fA-F])", text)
+    if re.fullmatch(r"0x[0-9a-fA-F]{64}", stripped) or (bare_hash and re.search(r"(?i)\bsign", text)):
         findings.append(_f("high", "You're being asked to sign a bare code (a 32-byte hash) that nobody can read. "
                                    "This is called blind signing: it can approve anything, including emptying your wallet."))
     elif re.fullmatch(r"(0x)?[0-9a-fA-F]{64}", stripped):
