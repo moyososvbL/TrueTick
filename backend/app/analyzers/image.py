@@ -30,6 +30,24 @@ class BadImageError(ValueError):
     pass
 
 
+MAX_SIDE = 1600  # plenty for reading text; phone screenshots are often 2500+ px and several MB
+
+
+def shrink(data: bytes, mime: str) -> tuple[bytes, str]:
+    """Smaller image = faster upload to Meta and a faster read. Text stays sharp at 1600 px."""
+    try:
+        with Image.open(io.BytesIO(data)) as im:
+            if max(im.size) <= MAX_SIDE and len(data) <= 700_000:
+                return data, mime
+            im = im.convert("RGB")
+            im.thumbnail((MAX_SIDE, MAX_SIDE), Image.LANCZOS)
+            out = io.BytesIO()
+            im.save(out, "JPEG", quality=85, optimize=True)
+            return out.getvalue(), "image/jpeg"
+    except (UnidentifiedImageError, OSError):
+        return data, mime
+
+
 def validate_image(data: bytes) -> None:
     try:
         with Image.open(io.BytesIO(data)) as im:
@@ -65,6 +83,7 @@ async def _check_qr(data: bytes, caption: str) -> Verdict | None:
 
 async def _read_with_vision(data: bytes, mime: str, caption: str) -> Verdict:
     s = get_settings()
+    data, mime = shrink(data, mime)
     file_id = await meta_client.upload_file(data, "screenshot" + _ext(mime), mime or "image/jpeg")
     events = await meta_client.respond(s.vision_model, [
         {"type": "input_text", "text": prompts.image_prompt(caption)},

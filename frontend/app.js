@@ -196,6 +196,27 @@ $("message").addEventListener("input", () => { autoGrow(); hideError(); });
 function showError(msg) { $("form-error").textContent = msg; $("form-error").hidden = false; }
 function hideError() { $("form-error").hidden = true; }
 
+// Phone screenshots can be several MB. Text stays sharp at 1600 px, and a small JPEG
+// uploads much faster on mobile data.
+async function shrinkImage(file) {
+  const MAX = 1600;
+  if (!file.type.startsWith("image/") || file.type === "image/gif" || !window.createImageBitmap) return file;
+  try {
+    const bmp = await createImageBitmap(file);
+    const scale = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+    if (scale === 1 && file.size < 1_200_000) { bmp.close && bmp.close(); return file; }
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * scale); c.height = Math.round(bmp.height * scale);
+    const g = c.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(bmp, 0, 0, c.width, c.height);
+    bmp.close && bmp.close();
+    const blob = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.85));
+    if (!blob || blob.size >= file.size) return file;
+    return new File([blob], file.name.replace(/\.[^.]+$/, "") + ".jpg", { type: "image/jpeg" });
+  } catch { return file; }
+}
+
 function busy(on, text) {
   const b = $("check-btn");
   b.disabled = on;
@@ -224,14 +245,16 @@ $("checker").addEventListener("submit", async (e) => {
   if (text) form.append("text", text);
   const together = picked.length > 1;
   const isAudio = picked[0] && picked[0].type.startsWith("audio");
-  busy(true, together ? `Reading ${picked.length} screenshots…` : isAudio ? "Listening…" : "Checking…");
+  const isImage = picked[0] && picked[0].type.startsWith("image");
+  busy(true, together ? `Reading ${picked.length} screenshots…` : isAudio ? "Listening…" : isImage ? "Reading your screenshot…" : "Checking…");
   try {
     let v;
+    const files = await Promise.all(picked.map(shrinkImage));
     if (together) {
-      picked.forEach((f) => form.append("files", f));
+      files.forEach((f) => form.append("files", f));
       v = await postForm("/api/check/conversation", form);
     } else {
-      if (picked[0]) form.append("file", picked[0]);
+      if (files[0]) form.append("file", files[0]);
       v = await postForm("/api/check", form);
     }
     showResult(v);

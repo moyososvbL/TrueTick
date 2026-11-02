@@ -5,11 +5,12 @@ One screenshot rarely shows it; the whole chat does. Muse Spark reads all images
 and returns a timeline, the stage the scam has reached and contradictions in the other person's story.
 """
 
+import asyncio
 import logging
 
 from backend.app.ai import meta_client, prompts
 from backend.app.analyzers.common import apply_findings, parse_model_json, verdict_from_model
-from backend.app.analyzers.image import _ext, validate_image
+from backend.app.analyzers.image import shrink, _ext, validate_image
 from backend.app.checks.link_inspect import inspect_links
 from backend.app.checks.links import extract_urls, run_checks
 from backend.app.config import get_settings
@@ -24,8 +25,10 @@ async def analyze_conversation(images: list[tuple[bytes, str]], caption: str = "
         validate_image(data)
     s = get_settings()
     try:
-        ids = [await meta_client.upload_file(d, f"chat_{n}{_ext(m)}", m or "image/jpeg")
-               for n, (d, m) in enumerate(images, 1)]
+        small = [shrink(d, m) for d, m in images]
+        # Upload all screenshots at the same time instead of one after another.
+        ids = await asyncio.gather(*[meta_client.upload_file(d, f"chat_{n}{_ext(m)}", m or "image/jpeg")
+                                     for n, (d, m) in enumerate(small, 1)])
         content = [{"type": "input_text", "text": prompts.conversation_prompt(len(images), caption)}]
         for n, fid in enumerate(ids, 1):
             content += [{"type": "input_text", "text": f"Screenshot [{n}]:"}, {"type": "input_image", "file_id": fid}]
