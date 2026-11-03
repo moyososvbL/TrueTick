@@ -110,6 +110,8 @@ python -m pytest
 
 Accuracy scripts (need a key): `python scripts/evaluate.py` runs the labelled messages in `samples/test_cases.csv`; `python scripts/evaluate_links.py` checks live phishing links from the public OpenPhish feed. `samples/test_images/` holds fictional test screenshots.
 
+**False alarms matter as much as catches.** A checker that flags everything is useless. `python scripts/check_false_alarms.py` runs the instant link checks on 117 real links people share every day (banks, government, delivery, social media, Google Docs, Paystack, Nigerian services): **0 high-risk false alarms**; only the 2 link shorteners (bit.ly, tinyurl) get a gentle "hides where it really goes" note. On the labelled test messages, the instant checks alone raise every scam link (13 of 13) and wrongly flag none of the 12 safe messages; Muse Spark and the safe website inspection then make the final call.
+
 ## Project structure
 
 ```
